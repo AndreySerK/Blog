@@ -1,2 +1,4 @@
-package main.controllers;public class ApiAuthController {
+package main.controllers;
+
+public class ApiAuthController {
 }

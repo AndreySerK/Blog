@@ -1,2 +1,4 @@
-package main.controllers;public class ApiPostController {
+package main.controllers;
+
+public class ApiPostController {
 }
