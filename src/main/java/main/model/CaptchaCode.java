@@ -6,9 +6,7 @@ import javax.persistence.*;
 import java.util.Date;
 
 @Entity
-@Getter
-@Setter
-@ToString
+@Data
 @Table(name = "captcha_codes")
 public class CaptchaCode {
 

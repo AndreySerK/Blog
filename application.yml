@@ -4,6 +4,12 @@ spring.datasource.password: 142215
 spring.datasource.driver-class-name: com.mysql.cj.jdbc.Driver
 spring.jpa.database-platform: org.hibernate.dialect.MySQL5Dialect
 spring.jpa.hibernate.ddl-auto: update
-spring:
-  datasource:
-    initialization-mode: never
+spring.datasource.initialization-mode: never
+
+blog.title: DevTalk
+blog.subtitle: Беседы разработчиков
+blog.phone: +7 903 000-11-11
+blog.email: mail@mail.ru
+blog.copyright: Андрей Кузнецов
+blog.copyrightFrom: 2021
+

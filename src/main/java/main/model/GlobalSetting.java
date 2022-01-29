@@ -3,16 +3,10 @@ package main.model;
 import com.sun.istack.NotNull;
 import lombok.*;
 import main.model.enums.Value;
-import org.hibernate.Hibernate;
-
 import javax.persistence.*;
-import java.util.Objects;
 
 @Entity
-@Getter
-@Setter
-@ToString
-@RequiredArgsConstructor
+@Data
 @Table(name = "global_settings")
 public class GlobalSetting {
 
@@ -29,10 +23,16 @@ public class GlobalSetting {
     @NotNull
     private String name;
 
-    @Column (columnDefinition = "VARCHAR(255)")
+    @Column (columnDefinition = "VARCHAR(255)", insertable = false, updatable =false)
     @NotNull
     @Enumerated(EnumType.STRING)
     private Value value;
+
+//    @JsonIgnore
+//    @OneToOne(fetch = FetchType.LAZY)
+//    @JoinColumn (name = "value")
+//    @ToString.Exclude
+//    private User user;
 
 
     @Override

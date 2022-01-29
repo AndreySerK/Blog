@@ -1,16 +1,14 @@
 package main.model;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.sun.istack.NotNull;
 import lombok.*;
 import javax.persistence.*;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+@Data
 @Entity
-@Getter
-@Setter
-@ToString
 @Table (name = "users")
 public class User {
 
@@ -19,9 +17,14 @@ public class User {
     @NotNull
     private int id;
 
+    @JsonManagedReference
     @OneToMany (cascade = CascadeType.ALL, mappedBy = "user", orphanRemoval = true)
     @ToString.Exclude
     private List<Post> posts;
+
+    @OneToOne(fetch = FetchType.LAZY)
+    @ToString.Exclude
+    private GlobalSetting setting;
 
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @ToString.Exclude

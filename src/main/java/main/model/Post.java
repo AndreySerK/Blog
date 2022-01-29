@@ -1,7 +1,7 @@
 package main.model;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.sun.istack.NotNull;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 import lombok.ToString;
 import main.model.enums.ModerationStatus;
 import javax.persistence.*;
@@ -10,19 +10,25 @@ import java.util.List;
 
 
 @Entity
-@Getter
-@Setter
-@ToString
+@Data
 @Table(name = "posts")
 public class Post {
+
+    @ManyToMany(cascade = CascadeType.ALL)
+    @JoinTable(name = "tag2post",
+            joinColumns = @JoinColumn(name = "post_id"),
+            inverseJoinColumns = @JoinColumn(name = "tag_id"))
+    public List <Tag> tags;
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @NotNull
     private int id;
 
+    @JsonBackReference
     @ManyToOne (fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", referencedColumnName = "id")
+    @JoinColumn(name = "user_id")
+    @ToString.Exclude
     private User user;
 
     @OneToMany (mappedBy = "post",cascade = CascadeType.ALL)
@@ -35,7 +41,7 @@ public class Post {
 
     @NotNull
     @Column (name = "is_active",columnDefinition = "TINYINT")
-    private Boolean isActive;
+    private int isActive;
 
 
     @Column(name = "moderation_status")
@@ -44,7 +50,7 @@ public class Post {
     private ModerationStatus moderationStatus = ModerationStatus.NEW;
 
     @Column(name = "moderator_id")
-    private int moderatorId;
+    private Integer moderatorId;
 
     @Column(name = "user_id", insertable = false, updatable = false)
     @NotNull

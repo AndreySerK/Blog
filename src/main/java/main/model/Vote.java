@@ -1,14 +1,13 @@
 package main.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.sun.istack.NotNull;
 import lombok.*;
 import javax.persistence.*;
 import java.util.Date;
 
 @Entity
-@Getter
-@Setter
-@ToString
+@Data
 @Table(name = "post_votes")
 public class Vote {
 
@@ -17,10 +16,12 @@ public class Vote {
     @NotNull
     private int id;
 
+    @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "post_id", referencedColumnName = "id")
     private Post post;
 
+    @JsonIgnore
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     @ToString.Exclude

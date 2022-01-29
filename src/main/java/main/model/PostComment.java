@@ -1,15 +1,13 @@
 package main.model;
 
-
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.sun.istack.NotNull;
 import lombok.*;
 import javax.persistence.*;
 import java.util.Date;
 
 @Entity
-@Getter
-@Setter
-@ToString
+@Data
 @Table(name = "post_comments")
 public class PostComment {
 
@@ -18,26 +16,20 @@ public class PostComment {
     @NotNull
     private int id;
 
-    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    @ToString.Exclude
-    private PostComment parentPostComment;
-
+    @JsonIgnore
     @OneToOne
-    @JoinColumn(name = "parent_id", referencedColumnName = "id")
-    @ToString.Exclude
-    private PostComment childPostComment;
-
-    @OneToOne
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "user_id",referencedColumnName = "id")
     @ToString.Exclude
     private User user;
 
+    @JsonIgnore
     @ManyToOne (fetch = FetchType.LAZY)
     @JoinColumn(name = "post_id", referencedColumnName = "id")
+    @ToString.Exclude
     private Post post;
 
-    @Column(name = "parent_id", insertable = false, updatable =false)
-    private int parentId;
+    @Column(name = "parent_id")
+    private Integer parentId;
 
     @Column(name = "user_id", insertable = false, updatable =false)
     @NotNull
