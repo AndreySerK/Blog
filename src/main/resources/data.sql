@@ -35,15 +35,6 @@ INSERT INTO tags (id, name) VALUES
 INSERT INTO tags (id, name) VALUES
 (3, 'News');
 
-INSERT INTO tag2post (id, post_id, tag_id) VALUES
-(1, 1, 1);
-INSERT INTO tag2post (id, post_id, tag_id) VALUES
-(2, 2, 3);
-INSERT INTO tag2post (id, post_id, tag_id) VALUES
-(3, 3, 2);
-INSERT INTO tag2post (id, post_id, tag_id) VALUES
-(4, 4, 2);
-
 UPDATE post_comments SET parent_id = 1 WHERE id = 1;
 INSERT INTO post_comments (id, parent_id, post_id, user_id, time, text) VALUES
 (2, null , 3, 2, '2021-12-01 23:03:01', 'Merry christmas!');

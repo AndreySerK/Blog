@@ -12,6 +12,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 @Service
 public class PostService {
@@ -22,14 +24,24 @@ public class PostService {
         this.postRepository = postRepository;
     }
 
-    public Page <Post> getPageOfPosts (int offset, int limit) {
+    public List <Post> getPageOfPosts (int offset, int limit) {
         Pageable nextPage = PageRequest.of(offset, limit);
-        return postRepository.findAll(nextPage);
+        return postRepository.findAll(nextPage).getContent();
     }
     public Integer getCountOfPosts () {
         return postRepository.findAll().size();
     }
-    public List <PostDto> getPageOfPostDto(@NotNull Page<Post> pageOfPosts ) {
+    public Integer getCountOfPostsWithQuery (String query) {
+        List <Post> postsWithQuery = new ArrayList<>();
+        List <Post> posts =  postRepository.findAll();
+        posts.forEach(post -> {
+            if (post.getText().contains(query)) {
+                postsWithQuery.add(post);
+            }
+        });
+        return postsWithQuery.size();
+    }
+    public List <PostDto> getPageOfPostDto(@NotNull List <Post> pageOfPosts ) {
         List<PostDto> postDtoList = new ArrayList<>();
         pageOfPosts.stream()
                 .filter(post -> post.getModerationStatus().equals(ModerationStatus.ACCEPTED) && post.getIsActive() == 1 && post.getTime().before(new Date()))
@@ -66,8 +78,16 @@ public class PostService {
         return postDtoList;
     }
 
-    public List<PostDto> getSortedListOfPostDtoByMode (int offset, int limit, String mode) {
-        Page<Post> postPage = getPageOfPosts(offset, limit);
+    public List <PostDto> getPageOfPostDtoWithQuery (int offset, int limit, String query) {
+        List <Post> postsWithQuery = getPageOfPosts(offset, limit)
+                .stream()
+                .filter(post -> post.getText().contains(query))
+                .collect(Collectors.toList());
+        return getPageOfPostDto(postsWithQuery);
+    }
+
+    public List <PostDto> getSortedListOfPostDtoByMode (int offset, int limit, String mode) {
+        List <Post> postPage = getPageOfPosts(offset, limit);
         List<PostDto> postDtoList = getPageOfPostDto(postPage);
         if (mode.equals("early")) {
             postDtoList.sort(Comparator.comparingLong(PostDto::getTimestamp));
