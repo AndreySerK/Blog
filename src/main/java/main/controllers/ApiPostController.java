@@ -18,13 +18,30 @@ public class ApiPostController {
         this.postsResponse = postsResponse;
     }
 
-    @GetMapping("/")
+    @GetMapping("")
     public ResponseEntity<PostsResponse> getMainPageOfPostDto (@RequestParam (defaultValue = "0") int offset,
                                                                @RequestParam (defaultValue = "10") int limit,
                                                                @RequestParam (defaultValue = "recent") String mode)
     {
         postsResponse.setCount(postService.getCountOfPosts());
         postsResponse.setPosts(postService.getSortedListOfPostDtoByMode(offset, limit, mode));
+        if (postsResponse.getPosts().isEmpty()) {
+            postsResponse.setCount(0);
+            return new ResponseEntity<>(postsResponse,HttpStatus.valueOf(200));
+        }
+        return new ResponseEntity<>(postsResponse, HttpStatus.OK);
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<PostsResponse> getPageOfPostDtoContainQuery (@RequestParam (defaultValue = "0") int offset,
+                                                                       @RequestParam (defaultValue = "10") int limit,
+                                                                       @RequestParam (defaultValue = "") String query)
+    {
+        if (query.trim().equals("")) {
+            return getMainPageOfPostDto(0, postService.getCountOfPosts(), "recent");
+        }
+        postsResponse.setCount (postService.getCountOfPostsWithQuery(query));
+        postsResponse.setPosts(postService.getPageOfPostDtoWithQuery(offset, limit, query));
         if (postsResponse.getPosts().isEmpty()) {
             postsResponse.setCount(0);
             return new ResponseEntity<>(postsResponse,HttpStatus.valueOf(200));

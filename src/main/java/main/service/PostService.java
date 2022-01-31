@@ -6,13 +6,10 @@ import main.DTO.UserForPostDto;
 import main.model.Post;
 import main.model.enums.ModerationStatus;
 import main.repository.PostRepository;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-
 import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 @Service
