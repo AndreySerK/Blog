@@ -1,5 +1,6 @@
 package main.service;
 import main.DTO.TagDto;
+import main.model.Post;
 import main.model.Tag;
 import main.repository.TagRepository;
 import org.springframework.stereotype.Service;
@@ -31,7 +32,7 @@ public class TagService {
     }
     public Double getWeightOfTag (Tag tag) {
         double tag2postCount  = tag.getPosts().size();
-        double allPostCount = postService.getCountOfPosts();
+        double allPostCount = postService.getCountOfAllPosts();
         double dWeightTag = tag2postCount/allPostCount;
         double countOfMostPopularTag = getCountOfMostPopularTag();
         double dWeightMax = countOfMostPopularTag/allPostCount;
@@ -44,9 +45,8 @@ public class TagService {
         List<Tag> tagList = getAllTags();
         tagList.forEach
                 (tag -> {
-                    int queryLength = query.length();
                     TagDto tagDto = new TagDto();
-                    if (tag.getName().substring(0, queryLength - 1).equals(query)) {
+                    if (query.length() <= tag.getName().length() && tag.getName().contains(query)) {
                         tagDto.setName(tag.getName());
                         tagDto.setWeight(getWeightOfTag(tag));
                         tagDtoList.add(tagDto);

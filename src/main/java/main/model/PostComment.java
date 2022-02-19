@@ -18,7 +18,7 @@ public class PostComment {
 
     @JsonIgnore
     @OneToOne
-    @JoinColumn(name = "user_id",referencedColumnName = "id")
+    @JoinColumn(name = "user_id", referencedColumnName = "id")
     @ToString.Exclude
     private User user;
 
@@ -46,9 +46,4 @@ public class PostComment {
     @Column (columnDefinition = "TEXT")
     @NotNull
     private String text;
-
-    @Override
-    public int hashCode() {
-        return getClass().hashCode();
-    }
 }

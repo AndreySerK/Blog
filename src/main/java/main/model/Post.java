@@ -5,6 +5,7 @@ import lombok.Data;
 import lombok.ToString;
 import main.model.enums.ModerationStatus;
 import javax.persistence.*;
+import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
 
@@ -35,7 +36,7 @@ public class Post {
     @ToString.Exclude
     private List<Vote> voteList;
 
-    @OneToMany (mappedBy = "post",cascade = CascadeType.ALL)
+    @OneToMany (mappedBy = "post",cascade = CascadeType.ALL, orphanRemoval = true)
     @ToString.Exclude
     private List<PostComment> postCommentList;
 
