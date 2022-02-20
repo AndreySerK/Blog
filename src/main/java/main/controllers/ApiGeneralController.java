@@ -1,4 +1,5 @@
 package main.controllers;
+import lombok.RequiredArgsConstructor;
 import main.api.response.CalendarOfPostsResponse;
 import main.api.response.InitResponse;
 import main.api.response.SettingsResponse;
@@ -19,6 +20,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/api")
 public class ApiGeneralController {
 
@@ -29,23 +31,6 @@ public class ApiGeneralController {
     private final TagService tagService;
     private final CalendarOfPostsResponse calendarOfPostsResponse;
     private final PostService postService;
-
-    public ApiGeneralController(InitResponse initResponse,
-                                SettingsService settings,
-                                UserService userService,
-                                TagService tagService,
-                                TagResponse tagResponse,
-                                CalendarOfPostsResponse calendarOfPostsResponse,
-                                PostService postService)
-    {
-        this.initResponse = initResponse;
-        this.settingsService = settings;
-        this.userService = userService;
-        this.tagResponse = tagResponse;
-        this.tagService = tagService;
-        this.calendarOfPostsResponse = calendarOfPostsResponse;
-        this.postService = postService;
-    }
 
     @GetMapping("/init")
     private InitResponse init() {

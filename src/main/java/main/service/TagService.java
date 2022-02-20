@@ -1,40 +1,30 @@
 package main.service;
+import lombok.RequiredArgsConstructor;
 import main.DTO.TagDto;
-import main.model.Post;
+import main.mappers.TagMapper;
 import main.model.Tag;
+import main.repository.PostRepository;
 import main.repository.TagRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
 
 @Service
+@RequiredArgsConstructor
 public class TagService {
 
     private final TagRepository tagRepository;
-    private final PostService postService;
+    private final PostRepository postRepository;
 
-    public TagService(TagRepository tagRepository, PostService postService) {
-        this.tagRepository = tagRepository;
-        this.postService = postService;
-    }
-
-    public List <Tag> getAllTags () {
+    private List <Tag> getAllTags () {
         return (List<Tag>) tagRepository.findAll();
     }
 
-    public Double getCountOfMostPopularTag () {
-        List <Integer> tag2postCounts = new ArrayList<>();
-        getAllTags().forEach(tag -> {
-            tag2postCounts.add(tag.getPosts().size());
-        });
-        tag2postCounts.sort(Collections.reverseOrder());
-        return Double.valueOf(tag2postCounts.get(0));
-    }
-    public Double getWeightOfTag (Tag tag) {
+    private Double getWeightOfTag (Tag tag) {
         double tag2postCount  = tag.getPosts().size();
-        double allPostCount = postService.getCountOfAllPosts();
+        long allPostCount = postRepository.count();
         double dWeightTag = tag2postCount/allPostCount;
-        double countOfMostPopularTag = getCountOfMostPopularTag();
+        double countOfMostPopularTag = tagRepository.getCountOfMostPopularTag();
         double dWeightMax = countOfMostPopularTag/allPostCount;
         double k = 1/dWeightMax;
         return dWeightTag*k;
@@ -45,25 +35,23 @@ public class TagService {
         List<Tag> tagList = getAllTags();
         tagList.forEach
                 (tag -> {
-                    TagDto tagDto = new TagDto();
+                    TagDto tagDto = TagMapper.INSTANCE.tagToTagDto(tag);
                     if (query.length() <= tag.getName().length() && tag.getName().contains(query)) {
-                        tagDto.setName(tag.getName());
                         tagDto.setWeight(getWeightOfTag(tag));
                         tagDtoList.add(tagDto);
                     }
                 });
         return tagDtoList;
     }
+
     public List<TagDto> getAllTagDto () {
         List <TagDto> tagDtoList = new ArrayList<>();
         List<Tag> tagList = getAllTags();
         tagList.forEach
                 (tag -> {
-                    TagDto tagDto = new TagDto();
-                    tagDto.setName(tag.getName());
+                    TagDto tagDto = TagMapper.INSTANCE.tagToTagDto(tag);
                     tagDto.setWeight(getWeightOfTag(tag));
                     tagDtoList.add(tagDto);
-
                 });
         return tagDtoList;
     }

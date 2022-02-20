@@ -1,6 +1,5 @@
 package main.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.sun.istack.NotNull;
 import lombok.*;
 import javax.persistence.*;
@@ -16,12 +15,10 @@ public class Vote {
     @NotNull
     private int id;
 
-    @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "post_id", referencedColumnName = "id")
     private Post post;
 
-    @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "user_id")
     @ToString.Exclude

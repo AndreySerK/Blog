@@ -28,13 +28,6 @@ public class GlobalSetting {
     @Enumerated(EnumType.STRING)
     private Value value;
 
-//    @JsonIgnore
-//    @OneToOne(fetch = FetchType.LAZY)
-//    @JoinColumn (name = "value")
-//    @ToString.Exclude
-//    private User user;
-
-
     @Override
     public int hashCode() {
         return getClass().hashCode();

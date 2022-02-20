@@ -1,28 +1,30 @@
 package main.controllers;
 
+import lombok.RequiredArgsConstructor;
+import main.DTO.AuthUserDto;
 import main.DTO.CaptchaCodeDto;
 import main.DTO.RegisterDto;
 import main.api.response.AuthResponse;
+import main.mappers.UserMapper;
 import main.service.AuthService;
 import main.service.CaptchaCodeService;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/api/auth")
 public class ApiAuthController {
 
     private final AuthService authService;
     private final CaptchaCodeService codeService;
 
-    public ApiAuthController(AuthService authService, CaptchaCodeService codeService) {
-        this.authService = authService;
-        this.codeService = codeService;
-    }
-
     @GetMapping("/check")
     public AuthResponse authResponse() {
        if (authService.isUserAuthorized(1)) {
-           return new AuthResponse(true, authService.getAuthUserDto(1));
+           AuthUserDto authUserDto = UserMapper.INSTANCE.userToAuthUserDto(authService.getAuthUser(1));
+           authUserDto.setModerationCount(authService.getPostsForModerationCount());
+           authUserDto.setSettings(true);
+           return new AuthResponse(true, authUserDto);
        } else return new AuthResponse(false);
     }
 

@@ -1,6 +1,5 @@
 package main.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.sun.istack.NotNull;
 import lombok.*;
 import javax.persistence.*;
@@ -16,13 +15,11 @@ public class PostComment {
     @NotNull
     private int id;
 
-    @JsonIgnore
     @OneToOne
     @JoinColumn(name = "user_id", referencedColumnName = "id")
     @ToString.Exclude
     private User user;
 
-    @JsonIgnore
     @ManyToOne (fetch = FetchType.LAZY)
     @JoinColumn(name = "post_id", referencedColumnName = "id")
     @ToString.Exclude

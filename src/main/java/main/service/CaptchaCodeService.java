@@ -2,6 +2,7 @@ package main.service;
 
 import com.github.cage.Cage;
 import com.github.cage.GCage;
+import lombok.RequiredArgsConstructor;
 import main.DTO.CaptchaCodeDto;
 import main.model.CaptchaCode;
 import main.repository.CaptchaCodeRepository;
@@ -17,13 +18,10 @@ import java.util.Date;
 
 
 @Service
+@RequiredArgsConstructor
 public class CaptchaCodeService {
 
     private final CaptchaCodeRepository codeRepository;
-
-    public CaptchaCodeService(CaptchaCodeRepository codeRepository) {
-        this.codeRepository = codeRepository;
-    }
 
     public CaptchaCodeDto getCaptchaCodeDto () {
         Cage cage = new GCage();
@@ -50,7 +48,7 @@ public class CaptchaCodeService {
         return captchaCodeDto;
     }
 
-    public void removeOutdatedCaptchaCode (int timePeriodInMs) {
+    private void removeOutdatedCaptchaCode (int timePeriodInMs) {
         Date date = new Date(System.currentTimeMillis() - timePeriodInMs);
         codeRepository.findAll()
                 .forEach(captchaCode -> {

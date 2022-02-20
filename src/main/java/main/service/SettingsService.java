@@ -1,17 +1,16 @@
 package main.service;
 
+import lombok.RequiredArgsConstructor;
 import main.api.response.SettingsResponse;
 import main.model.enums.Value;
 import main.repository.GlobalSettingRepository;
 import org.springframework.stereotype.Service;
 
 @Service
+@RequiredArgsConstructor
 public class SettingsService {
-    private final GlobalSettingRepository globalSettingRepository;
 
-    public SettingsService(GlobalSettingRepository globalSettingRepository) {
-        this.globalSettingRepository = globalSettingRepository;
-    }
+    private final GlobalSettingRepository globalSettingRepository;
 
     public SettingsResponse getGlobalSettings () {
         SettingsResponse settingsResponse = new SettingsResponse();

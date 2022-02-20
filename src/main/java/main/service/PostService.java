@@ -1,33 +1,33 @@
 package main.service;
 
-import com.sun.istack.NotNull;
+import lombok.RequiredArgsConstructor;
 import main.DTO.*;
+import main.mappers.CommentMapper;
+import main.mappers.PostMapper;
+import main.mappers.TagMapper;
+import main.mappers.UserMapper;
 import main.model.Post;
 import main.model.enums.ModerationStatus;
 import main.repository.PostRepository;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-
 import java.time.ZoneId;
 import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class PostService {
 
     private final PostRepository postRepository;
 
-    public PostService(PostRepository postRepository) {
-        this.postRepository = postRepository;
-    }
-
-    public List<Post> getPostsWithLimitAndOffset (int offset, int limit) {
+    private List<Post> getPostsWithLimitAndOffset (int offset, int limit) {
         Pageable nextPage = PageRequest.of(offset, limit);
         return postRepository.findAll(nextPage).getContent();
     }
 
-    public List<Post> getPostsWithLimitAndOffsetByDate (int offset, int limit, String date) {
+    private List<Post> getPostsWithLimitAndOffsetByDate (int offset, int limit, String date) {
 
         return getPostsWithLimitAndOffset(offset, limit)
                 .stream()
@@ -35,7 +35,7 @@ public class PostService {
                 .collect(Collectors.toList());
     }
 
-    public List<Post> getPostsWithLimitAndOffsetByTag (int offset, int limit, String tag) {
+    private List<Post> getPostsWithLimitAndOffsetByTag (int offset, int limit, String tag) {
         List<Post> posts = new ArrayList<>();
         getPostsWithLimitAndOffset(offset, limit)
                 .forEach(post -> {
@@ -49,7 +49,7 @@ public class PostService {
         return posts;
     }
 
-    public List<Post> getActiveAcceptedPostsBeforeCurrentTime () {
+    private List<Post> getActiveAcceptedPostsBeforeCurrentTime () {
         return postRepository
                 .findAll()
                 .stream()
@@ -74,17 +74,16 @@ public class PostService {
 
     public PostByIdDto getPostByIdDto (Integer id) {
         Post post = getActiveAcceptedPostByIdBeforeCurrentTime(id);
-        if (post == null) {return null;}
-        PostByIdDto postByIdDto= new PostByIdDto();
-        UserForPostDto userForPostDto = new UserForPostDto();
-        postByIdDto.setId(post.getId());
-        postByIdDto.setTimestamp(post.getTime().getTime()/1000);
+        int mSecCountInSec = 1000;
+        if (post == null) {
+            return null;
+        }
+        PostByIdDto postByIdDto= PostMapper.INSTANCE.postToPostByIdDto(post);
+        UserForPostDto userForPostDto = UserMapper.INSTANCE.userToUserForPostDto(post.getUser());
+        long timestampInSeconds = post.getTime().getTime()/mSecCountInSec;
+        postByIdDto.setTimestamp(timestampInSeconds);
         postByIdDto.setActive(true);
-        userForPostDto.setId(post.getUserId());
-        userForPostDto.setName(post.getUser().getName());
         postByIdDto.setUser(userForPostDto);
-        postByIdDto.setTitle(post.getTitle());
-        postByIdDto.setText(post.getText());
         postByIdDto.setDislikeCount
                 ((int) post.getVoteList()
                         .stream()
@@ -96,26 +95,19 @@ public class PostService {
                         .filter(vote -> vote.getValue() > 0)
                         .count()
                 );
-        postByIdDto.setViewCount(post.getViewCount());
         List<CommentForPostByIdDto> commentsForPostByIdDtoList = new ArrayList<>();
         post.getPostCommentList()
                 .forEach(postComment -> {
-                     CommentForPostByIdDto comment = new CommentForPostByIdDto();
-                     UserForCommentDto user = new UserForCommentDto();
-                     comment.setId(postComment.getId());
-                     comment.setTimestamp(postComment.getTime().getTime()/1000);
-                     comment.setText(postComment.getText());
-                     user.setId(postComment.getUserId());
-                     user.setName(postComment.getUser().getName());
-                     user.setPhoto(postComment.getUser().getPhoto());
+                     CommentForPostByIdDto comment = CommentMapper.INSTANCE.commentForPostByIdDto(postComment);
+                     UserForCommentDto user = UserMapper.INSTANCE.userToUserForCommentsDto(post.getUser());
+                     comment.setTimestamp(postComment.getTime().getTime()/mSecCountInSec);
                      comment.setUser(user);
                      commentsForPostByIdDtoList.add(comment);
                 });
         postByIdDto.setComments(commentsForPostByIdDtoList);
         List<TagForPostByIdDto> tagForPostByIdDtoList = new ArrayList<>();
         post.getTags().forEach(tag -> {
-            TagForPostByIdDto tagForPostByIdDto = new TagForPostByIdDto();
-            tagForPostByIdDto.setName(tag.getName());
+            TagForPostByIdDto tagForPostByIdDto = TagMapper.INSTANCE.tagToTagForPostByIdDto(tag);
             tagForPostByIdDtoList.add(tagForPostByIdDto);
         });
         postByIdDto.setTags(tagForPostByIdDtoList);
@@ -153,7 +145,9 @@ public class PostService {
         return postsMap;
     }
 
-    public Integer getCountOfAllPosts () {return postRepository.findAll().size();}
+    public Integer getCountOfAllPosts () {
+        return postRepository.getCountOfAllPosts();
+    }
 
     public Integer getCountOfPostsWithQuery (String query) {
         List <Post> postsWithQuery = new ArrayList<>();
@@ -166,21 +160,18 @@ public class PostService {
         return postsWithQuery.size();
     }
 
-    public List<PostDto> getListOfPostDto(@NotNull List <Post> posts ) {
+    private List<PostDto> getListOfPostDto( List <Post> posts ) {
         List<PostDto> postDtoList = new ArrayList<>();
+        int mSecCountInSec = 1000;
         posts.stream()
                 .filter(post -> post.getModerationStatus().equals(ModerationStatus.ACCEPTED)
                         && post.getIsActive() == 1
                         && post.getTime().before(new Date()))
                 .forEach(post -> {
-            PostDto postDto = new PostDto();
-            UserForPostDto user = new UserForPostDto();
-            user.setId(post.getUserId());
-            user.setName(post.getUser().getName());
+            PostDto postDto = PostMapper.INSTANCE.postToPostDto(post);
+            UserForPostDto user = UserMapper.INSTANCE.userToUserForPostDto(post.getUser());
             postDto.setUser(user);
-            postDto.setId(post.getId());
-            postDto.setTimestamp(post.getTime().getTime()/1000);
-            postDto.setTitle(post.getTitle());
+            postDto.setTimestamp(post.getTime().getTime()/mSecCountInSec);
             postDto.setCommentCount(post.getPostCommentList().size());
             postDto.setDislikeCount
                     ((int) post.getVoteList()
@@ -193,9 +184,9 @@ public class PostService {
                             .filter(vote -> vote.getValue() > 0)
                             .count()
                     );
-            postDto.setViewCount(post.getViewCount());
             String announce = post.getText();
-            if (announce.length() < 150) {
+            int announceMaxLength = 150;
+            if (announce.length() < announceMaxLength) {
                 postDto.setAnnounce(announce);
             } else {
                 postDto.setAnnounce(announce.substring(0,149) + "...");

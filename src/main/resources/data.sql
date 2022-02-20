@@ -70,6 +70,8 @@ which provides a consistent means of configuring and managing Java objects using
 lifecycles of specific objects: creating these objects, calling their initialization methods, and configuring these objects by wiring them together.
 Objects created by the container are also called managed objects or beans. The container can be configured by loading XML (Extensible Markup Language)
 files or detecting ', 300);
+INSERT INTO posts (id, is_active, moderation_status, moderator_id, user_id, time, title, text, view_count) VALUES
+(13, 1, 'NEW', 1 , 3, '2019-10-04 23:08:59', 'Sport', 'Good game bsa!!!', 8);
 
 INSERT INTO post_votes (id, user_id, post_id, time, value) VALUES
 (1, 1, 4, '2021-12-01 23:08:01', 1);

@@ -26,7 +26,6 @@ public class Post {
     @NotNull
     private int id;
 
-    @JsonBackReference
     @ManyToOne (fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     @ToString.Exclude
@@ -44,7 +43,6 @@ public class Post {
     @Column (name = "is_active",columnDefinition = "TINYINT")
     private int isActive;
 
-
     @Column(name = "moderation_status")
     @Enumerated(EnumType.STRING)
     @NotNull
@@ -56,7 +54,6 @@ public class Post {
     @Column(name = "user_id", insertable = false, updatable = false)
     @NotNull
     private int userId;
-
 
     @Column(columnDefinition = "DATETIME")
     @NotNull

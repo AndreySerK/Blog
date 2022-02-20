@@ -1,5 +1,6 @@
 package main.controllers;
 
+import lombok.RequiredArgsConstructor;
 import main.DTO.PostByIdDto;
 import main.api.response.PostsResponse;
 import main.model.Post;
@@ -10,16 +11,12 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/api/post")
 public class ApiPostController {
 
     private final PostService postService;
     private final PostsResponse postsResponse;
-
-    public ApiPostController(PostService postService, PostsResponse postsResponse) {
-        this.postService = postService;
-        this.postsResponse = postsResponse;
-    }
 
     @GetMapping("")
     public ResponseEntity<PostsResponse> getListOfPostDto (@RequestParam (defaultValue = "0") int offset,

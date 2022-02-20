@@ -1,5 +1,6 @@
 package main.service;
 
+import lombok.RequiredArgsConstructor;
 import main.DTO.AuthUserDto;
 import main.DTO.ErrorsDto;
 import main.DTO.RegisterDto;
@@ -21,43 +22,25 @@ import java.util.stream.Collectors;
 
 
 @Service
+@RequiredArgsConstructor
 public class AuthService {
 
     private final UserRepository userRepository;
     private final CaptchaCodeRepository captchaCodeRepository;
 
-    public AuthService(UserRepository userRepository, CaptchaCodeRepository captchaCodeRepository) {
-        this.userRepository = userRepository;
-        this.captchaCodeRepository = captchaCodeRepository;
-    }
-
     public boolean isUserAuthorized (int id) {
-        return false;
+        return true;
     }
 
-    public AuthUserDto getAuthUserDto (int id) {
-        User user = userRepository.findById(id).get();
-        AuthUserDto authUserDto= new AuthUserDto();
-        authUserDto.setEmail(user.getEmail());
-        authUserDto.setId(user.getId());
-        authUserDto.setName(user.getName());
-        authUserDto.setPhoto(user.getPhoto());
-        authUserDto.setModeration(user.getIsModerator());
-        if(user.getIsModerator()) {
-            authUserDto.setSettings(true);
-            List<Post> newPosts = user.getPosts()
-                    .stream()
-                    .filter(post -> post.getModerationStatus().equals(ModerationStatus.NEW))
-                    .collect(Collectors.toList());
-            authUserDto.setModerationCount(newPosts.size());
-        } else {
-            authUserDto.setSettings(false);
-            authUserDto.setModerationCount(0);
-        }
-        return authUserDto;
+    public int getPostsForModerationCount () {
+        return userRepository.getPostsForModerationCount();
     }
 
-    public boolean isValidEmailAddress(String email) {
+    public User getAuthUser (int id) {
+        return userRepository.findById(id).orElseThrow();
+    }
+
+    private boolean isValidEmailAddress(String email) {
         boolean result = true;
         try {
             InternetAddress emailAddr = new InternetAddress(email);
@@ -68,23 +51,24 @@ public class AuthService {
         return result;
     }
 
-    public boolean isEmailAlreadyInUse (String email) {
+    private boolean isEmailAlreadyInUse (String email) {
         return userRepository.findAll().stream()
                 .anyMatch(user -> user.getEmail().equals(email));
     }
 
-    public boolean isValidName(String name) {
+    private boolean isValidName(String name) {
         String regex = "^[A-Za-zА-Яа-я]{3,29}$";
         Pattern p = Pattern.compile(regex);
         Matcher m = p.matcher(name);
         return m.matches();
     }
 
-    public boolean isValidPassword (String password) {
-        return password.length() >= 6;
+    private boolean isValidPassword (String password) {
+        int minPasswordLength = 6;
+        return password.length() >= minPasswordLength;
     }
 
-    public boolean isValidCaptcha (String code, String secretCode) {
+    private boolean isValidCaptcha (String code, String secretCode) {
         if(captchaCodeRepository.findCaptchaCodeBySecretCode(secretCode).isEmpty()) {
             return false;
         } else

@@ -1,6 +1,5 @@
 package main.model;
 
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.sun.istack.NotNull;
 import lombok.*;
 import javax.persistence.*;
@@ -17,7 +16,6 @@ public class User {
     @NotNull
     private int id;
 
-    @JsonManagedReference
     @OneToMany (cascade = CascadeType.ALL, mappedBy = "user", orphanRemoval = true)
     @ToString.Exclude
     private List<Post> posts;
