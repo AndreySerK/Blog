@@ -1,5 +1,7 @@
 package main.api.response;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Getter;
 import lombok.Setter;
 import main.DTO.AuthUserDto;
@@ -7,6 +9,7 @@ import main.DTO.AuthUserDto;
 
 @Getter
 @Setter
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class AuthResponse {
 
     private boolean result;
@@ -20,7 +23,6 @@ public class AuthResponse {
         this.result = result;
         this.user = user;
     }
-
 }
 
 

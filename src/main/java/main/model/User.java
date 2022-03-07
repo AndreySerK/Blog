@@ -16,7 +16,7 @@ public class User {
     @NotNull
     private int id;
 
-    @OneToMany (cascade = CascadeType.ALL, mappedBy = "user", orphanRemoval = true)
+    @OneToMany (cascade = CascadeType.ALL, mappedBy = "user")
     @ToString.Exclude
     private List<Post> posts;
 
@@ -24,17 +24,17 @@ public class User {
     @ToString.Exclude
     private GlobalSetting setting;
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     @ToString.Exclude
     private List<Vote> votes;
 
-    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @ToString.Exclude
     private PostComment postComment;
 
     @Column (name = "is_moderator",columnDefinition = "TINYINT")
     @NotNull
-    private Boolean isModerator;
+    private int isModerator;
 
     @Column (name = "reg_time",columnDefinition = "DATETIME")
     @NotNull
@@ -61,5 +61,9 @@ public class User {
     @Override
     public int hashCode() {
         return getClass().hashCode();
+    }
+
+    public Role getRole() {
+        return isModerator == 1 ? Role.MODERATOR : Role.USER;
     }
 }

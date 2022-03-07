@@ -4,12 +4,15 @@ import lombok.RequiredArgsConstructor;
 import main.DTO.AuthUserDto;
 import main.DTO.ErrorsDto;
 import main.DTO.RegisterDto;
+import main.api.request.RegisterRequest;
 import main.model.Post;
 import main.model.User;
 import main.model.enums.ModerationStatus;
 import main.repository.CaptchaCodeRepository;
 import main.repository.UserRepository;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
@@ -27,10 +30,7 @@ public class AuthService {
 
     private final UserRepository userRepository;
     private final CaptchaCodeRepository captchaCodeRepository;
-
-    public boolean isUserAuthorized (int id) {
-        return true;
-    }
+    private final PasswordEncoder passwordEncoder;
 
     public int getPostsForModerationCount () {
         return userRepository.getPostsForModerationCount();
@@ -38,17 +38,6 @@ public class AuthService {
 
     public User getAuthUser (int id) {
         return userRepository.findById(id).orElseThrow();
-    }
-
-    private boolean isValidEmailAddress(String email) {
-        boolean result = true;
-        try {
-            InternetAddress emailAddr = new InternetAddress(email);
-            emailAddr.validate();
-        } catch (AddressException ex) {
-            result = false;
-        }
-        return result;
     }
 
     private boolean isEmailAlreadyInUse (String email) {
@@ -75,32 +64,32 @@ public class AuthService {
             return captchaCodeRepository.findCaptchaCodeBySecretCode(secretCode).get(0).getCode().equals(code);
     }
 
-    public RegisterDto getRegisterDto (String email, String name, String password, String code, String secretCode) {
-        if (isValidEmailAddress(email) && isValidName(name) && !isEmailAlreadyInUse(email)
-            && isValidPassword(password) && isValidCaptcha(code,secretCode))   {
+    public RegisterDto getRegisterDto (RegisterRequest registerRequest) {
+        if (isValidName(registerRequest.getName())
+                && !isEmailAlreadyInUse(registerRequest.getEmail())
+                && isValidPassword(registerRequest.getPassword())
+                && isValidCaptcha(registerRequest.getCaptcha(),registerRequest.getCaptchaSecret()))   {
             User newUser = new User();
-            newUser.setEmail(email);
-            newUser.setName(name);
+            newUser.setEmail(registerRequest.getEmail());
+            newUser.setName(registerRequest.getName());
             newUser.setRegTime(new Date());
-            newUser.setPassword(password);
+            newUser.setPassword(passwordEncoder.encode(registerRequest.getPassword()));
+            newUser.setIsModerator(0);
             userRepository.save(newUser);
             return new RegisterDto(true);
         }
         RegisterDto registerDtoErr = new RegisterDto(false);
         ErrorsDto errorsDto = new ErrorsDto();
-//        if (!isValidEmailAddress(email)) {
-//            errorsDto.setEmail("E-mail введен некорректно!");
-//        }
-        if (isEmailAlreadyInUse(email)) {
+        if (isEmailAlreadyInUse(registerRequest.getEmail())) {
             errorsDto.setEmail("Этот e-mail уже зарегистрирован!");
         }
-        if (!isValidName(name)) {
+        if (!isValidName(registerRequest.getName())) {
             errorsDto.setName("Имя указано неверно");
         }
-        if (!isValidPassword(password)) {
+        if (!isValidPassword(registerRequest.getPassword())) {
             errorsDto.setPassword("Пароль короче 6-ти символов");
         }
-        if (!isValidCaptcha(code, secretCode)) {
+        if (!isValidCaptcha(registerRequest.getCaptcha(), registerRequest.getCaptchaSecret())) {
             errorsDto.setCaptcha("Код с картинки введён неверно");
         }
         registerDtoErr.setErrors(errorsDto);
