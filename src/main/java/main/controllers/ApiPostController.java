@@ -2,15 +2,21 @@ package main.controllers;
 
 import lombok.RequiredArgsConstructor;
 import main.DTO.PostByIdDto;
+import main.api.request.AddCommentRequest;
+import main.api.request.NewPostRequest;
+import main.api.request.PostVoteRequest;
+import main.api.response.NewPostResponse;
 import main.api.response.PostsResponse;
+import main.api.response.ResultResponse;
 import main.model.Post;
 import main.service.PostService;
-import main.service.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
+
+import java.security.Principal;
 
 @RestController
 @RequiredArgsConstructor
@@ -147,4 +153,32 @@ public class ApiPostController {
         }
         return new ResponseEntity<>(postsResponse, HttpStatus.OK);
     }
+
+    @PostMapping("/")
+    @PreAuthorize("hasAuthority('user:write')")
+    public ResponseEntity<NewPostResponse> newPost(@RequestBody NewPostRequest newPostRequest, Principal principal) {
+
+        return ResponseEntity.ok(postService.addNewPost(newPostRequest, principal));
+    }
+
+    @PutMapping("/{id}")
+    @PreAuthorize("hasAuthority('user:moderate')")
+    public ResponseEntity<NewPostResponse> changePost(@PathVariable int id,
+            @RequestBody NewPostRequest newPostRequest, Principal principal) {
+
+        return ResponseEntity.ok(postService.changePost(newPostRequest, principal, id));
+    }
+
+    @PostMapping("/like")
+    @PreAuthorize("hasAuthority('user:write')")
+    public ResponseEntity<ResultResponse> likeToPost (@RequestBody PostVoteRequest request, Principal principal) {
+        return ResponseEntity.ok(postService.setVoteValue(request,principal,1));
+    }
+
+    @PostMapping("/dislike")
+    @PreAuthorize("hasAuthority('user:write')")
+    public ResponseEntity<ResultResponse> dislikeToPost (@RequestBody PostVoteRequest request, Principal principal) {
+        return ResponseEntity.ok(postService.setVoteValue(request,principal,-1));
+    }
+
 }

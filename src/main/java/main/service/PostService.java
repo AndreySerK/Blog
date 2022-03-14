@@ -2,23 +2,33 @@ package main.service;
 
 import lombok.RequiredArgsConstructor;
 import main.DTO.*;
+import main.api.request.AddCommentRequest;
+import main.api.request.NewPostRequest;
+import main.api.request.PostModerateRequest;
+import main.api.request.PostVoteRequest;
+import main.api.response.*;
 import main.mappers.CommentMapper;
 import main.mappers.PostMapper;
 import main.mappers.TagMapper;
 import main.mappers.UserMapper;
-import main.model.Post;
-import main.model.User;
+import main.model.*;
+import main.model.enums.Code;
 import main.model.enums.ModerationStatus;
-import main.repository.PostRepository;
-import main.repository.UserRepository;
+import main.model.enums.Value;
+import main.repository.*;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+
+import java.lang.module.FindException;
+import java.security.Principal;
+import java.sql.Timestamp;
 import java.time.ZoneId;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 @Service
@@ -26,7 +36,15 @@ import java.util.stream.Collectors;
 public class PostService {
 
     private final PostRepository postRepository;
+    private final GlobalSettingRepository globalSettingRepository;
+    private final PostCommentRepository postCommentRepository;
+    private final VoteRepository voteRepository;
     private final UserRepository userRepository;
+    private final TagRepository tagRepository;
+
+    private Date timestampToDate (Timestamp timestamp) {
+        return  new Date(timestamp.getTime());
+    }
 
     private List<Post> getPostsWithLimitAndOffset (int offset, int limit) {
         Pageable nextPage = PageRequest.of(offset, limit);
@@ -342,6 +360,209 @@ public class PostService {
         return getListOfPostDto(getPostsWithLimitAndOffsetByTag(offset, limit, tag), "accepted",1,new Date());
     }
 
+    public NewPostResponse addNewPost (NewPostRequest newPostRequest, Principal principal) {
+        NewPostResponse postsResponse = new NewPostResponse();
+        NewPostErrors newPostErrors = new NewPostErrors();
+        if (newPostRequest.getTitle().length() < 3 || newPostRequest.getTitle() == null) {
+            newPostErrors.setTitle("Заголовок не установлен");
+        }
+        if (newPostRequest.getText().length() < 50 || newPostRequest.getText() == null) {
+            newPostErrors.setText("Текст публикации слишком короткий");
+        }
+        if (newPostRequest.getTitle().length() > 2 && newPostRequest.getText().length() > 49) {
+            Post newPost = new Post();
+            if (newPostRequest.getTimestamp().before(new Date())) {
+                newPost.setTime(new Date());
+            } else {
+                newPost.setTime(timestampToDate(newPostRequest.getTimestamp()));
+            }
+            newPost.setIsActive(newPostRequest.getActive());
+            newPost.setTitle(newPostRequest.getTitle());
+            newPost.setText(newPostRequest.getText());
+            newPost.setUser(userRepository.findByEmail(principal.getName()).get());
+            newPost.setViewCount(0);
+            postRepository.save(newPost);
+            newPostRequest.getTags().forEach(t -> {
+                Tag tag = tagRepository.getTagByName(t);
+                Tag2post tag2post = new Tag2post();
+                if (tag == null) {
+                    Tag newTag = new Tag();
+                    newTag.setName(t);
+                    tagRepository.save(newTag);
+                    tag2post.setTagId(tagRepository.getTagByName(t).getId());
+                } else {
+                    tag2post.setTagId(tag.getId());
+                }
+                tag2post.setPostId(newPost.getId());
+            });
+            postsResponse.setResult(true);
+            return postsResponse;
+        }
+        postsResponse.setResult(false);
+        postsResponse.setErrors(newPostErrors);
+        return postsResponse;
+    }
+
+    public NewPostResponse changePost (NewPostRequest newPostRequest, Principal principal, int id) {
+        NewPostResponse postResponse = new NewPostResponse();
+        NewPostErrors newPostErrors = new NewPostErrors();
+        if (newPostRequest.getTitle().length() < 3 || newPostRequest.getTitle() == null) {
+            newPostErrors.setTitle("Заголовок не установлен");
+        }
+        if (newPostRequest.getText().length() < 50 || newPostRequest.getText() == null) {
+            newPostErrors.setText("Текст публикации слишком короткий");
+        }
+        if (newPostRequest.getTitle().length() > 2 && newPostRequest.getText().length() > 49) {
+            Post post = postRepository.findById(id).orElseThrow(() -> new FindException("Пост с таки id не найден"));
+            if (newPostRequest.getTimestamp().before(new Date())) {
+                post.setTime(new Date());
+            } else {
+                post.setTime(timestampToDate(newPostRequest.getTimestamp()));
+            }
+            post.setIsActive(newPostRequest.getActive());
+            post.setTitle(newPostRequest.getTitle());
+            post.setText(newPostRequest.getText());
+            if (userRepository.findByEmail(principal.getName()).get().getIsModerator() == 0) {
+                post.setModerationStatus(ModerationStatus.NEW);
+            }
+            postRepository.save(post);
+            newPostRequest.getTags().forEach(t -> {
+                Tag tag = tagRepository.getTagByName(t);
+                Tag2post tag2post = new Tag2post();
+                if (tag == null) {
+                    Tag newTag = new Tag();
+                    newTag.setName(t);
+                    tagRepository.save(newTag);
+                    tag2post.setTagId(tagRepository.getTagByName(t).getId());
+                } else {
+                    tag2post.setTagId(tag.getId());
+                }
+                tag2post.setPostId(post.getId());
+            });
+            postResponse.setResult(true);
+            return postResponse;
+        }
+        postResponse.setResult(false);
+        postResponse.setErrors(newPostErrors);
+        return postResponse;
+    }
+
+    public String isCommentAddSuccess (AddCommentRequest request) {
+
+        if (request.getText() == null || request.getText().length() < 5) {
+            return "Текст комментария не задан или слишком короткий";
+        }
+        if (request.getParentId() == null ) {
+            if (!postRepository.existsById(request.getPostId())) {
+                return "400";
+            }
+        } else {
+            if (!postRepository.existsById(request.getPostId())
+                    || !postCommentRepository.existsById(request.getParentId())) {
+                return "400";
+            }
+        }
+        return "200";
+    }
+
+    public AddCommentResponse getAddCommentResponse (AddCommentRequest request, Principal principal) {
+        AddCommentResponse addCommentResponse = new AddCommentResponse();
+        PostComment newComment = new PostComment();
+        newComment.setText(request.getText());
+        newComment.setParentId(request.getParentId());
+        newComment.setTime(new Date());
+        newComment.setPost(postRepository.getOne(request.getPostId()));
+        newComment.setUser(userRepository.findByEmail(principal.getName()).orElseThrow());
+        postCommentRepository.save(newComment);
+        addCommentResponse.setId(postCommentRepository.getPostCommentByText(request.getText()).getId());
+        return addCommentResponse;
+    }
+
+    public AddCommentResponseErr getAddCommentErr (AddCommentRequest request) {
+        AddCommentErr addCommentErr = new AddCommentErr();
+        AddCommentResponseErr addCommentResponseErr = new AddCommentResponseErr();
+        addCommentErr.setText(isCommentAddSuccess(request));
+        addCommentResponseErr.setResult(false);
+        addCommentResponseErr.setErrors(addCommentErr);
+        return addCommentResponseErr;
+    }
+
+    public boolean isPostModerateSuccess (PostModerateRequest request, Principal principal) {
+        if (userRepository.findByEmail(principal.getName()).orElseThrow().getIsModerator() == 0
+        || !postRepository.existsById(request.getPostId())) {
+            return false;
+        }
+        Post postToModerate = postRepository.findById(request.getPostId()).orElseThrow();
+        if (request.getDecision().equals("declined")) {
+            postToModerate.setModerationStatus(ModerationStatus.DECLINED);
+            postRepository.save(postToModerate);
+            return true;
+        }
+        if (request.getDecision().equals("accepted")) {
+            postToModerate.setModerationStatus(ModerationStatus.ACCEPTED);
+            postRepository.save(postToModerate);
+            return true;
+        }
+        return false;
+    }
+
+    public StatResponse getStatResponse () {
+        StatResponse statResponse = new StatResponse();
+        List<Post> posts = postRepository.findAll();
+        List<Vote> votes = voteRepository.findAll();
+        int likesCount = (int) votes.stream()
+                .filter(vote -> vote.getValue() == 1)
+                .count();
+        int dislikeCount = (int) votes.stream()
+                .filter(vote -> vote.getValue() == -1)
+                .count();
+        AtomicInteger viewCount = new AtomicInteger();
+        posts.forEach(post -> {
+            viewCount.addAndGet(post.getViewCount());
+        });
+        statResponse.setDislikesCount(dislikeCount);
+        statResponse.setLikesCount(likesCount);
+        statResponse.setPostsCount(posts.size());
+        List<Date> dateList = new ArrayList<>();
+        posts.forEach(post -> dateList.add(post.getTime()));
+        dateList.sort(Comparator.naturalOrder());
+        statResponse.setFirstPublication(dateList.get(0));
+        return statResponse;
+    }
+
+    public boolean statisticsIsPublic (Principal principal) {
+        if (userRepository.findByEmail(principal.getName()).orElseThrow().getIsModerator() == 0
+                || globalSettingRepository.findByCode(Code.STATISTICS_IS_PUBLIC).getValue().equals(Value.NO)) {
+            return false;
+        }
+        return true;
+    }
+
+    public ResultResponse setVoteValue (PostVoteRequest request, Principal principal, int voteValue) {
+        ResultResponse resultResponse = new ResultResponse();
+        Post post = postRepository.getOne(request.getPostId());
+        User currentUser = userRepository.findByEmail(principal.getName()).orElseThrow();
+        Vote vote = voteRepository.getVoteByUserAndPost(currentUser,post);
+        if (vote != null) {
+            if (vote.getValue() != voteValue) {
+                vote.setValue(voteValue);
+                vote.setTime(new Date());
+                voteRepository.save(vote);
+                resultResponse.setResult(true);
+                return resultResponse;
+            }
+            resultResponse.setResult(false);
+            return resultResponse;
+        }
+        Vote newVote = new Vote();
+        newVote.setValue(voteValue);
+        newVote.setUser(currentUser);
+        newVote.setPost(post);
+        newVote.setTime(new Date());
+        voteRepository.save(newVote);
+        resultResponse.setResult(true);
+        return resultResponse;
+    }
 }
 
 

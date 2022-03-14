@@ -3,13 +3,18 @@ package main.controllers;
 import lombok.RequiredArgsConstructor;
 import main.DTO.CaptchaCodeDto;
 import main.DTO.RegisterDto;
+import main.api.request.ChangePasswordRequest;
 import main.api.request.RegisterRequest;
+import main.api.request.RestorePasswordRequest;
 import main.api.response.AuthResponse;
 import main.api.request.LoginRequest;
 import main.api.response.LoginResponse;
+import main.api.response.ResultResponse;
+import main.model.User;
 import main.repository.UserRepository;
 import main.service.AuthService;
 import main.service.CaptchaCodeService;
+import main.service.EmailService;
 import main.service.UserService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -22,7 +27,12 @@ import org.springframework.web.bind.annotation.*;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.security.Principal;
+import java.util.Arrays;
+import java.util.Random;
 
 @RestController
 @RequiredArgsConstructor
@@ -31,6 +41,7 @@ public class ApiAuthController {
 
     private final AuthService authService;
     private final UserService userService;
+    private final EmailService emailService;
     private final CaptchaCodeService codeService;
     private final UserRepository userRepository;
     private final AuthenticationManager authenticationManager;
@@ -77,5 +88,40 @@ public class ApiAuthController {
             request.getSession().invalidate();
         }
         return ResponseEntity.ok(new AuthResponse(true));
+    }
+
+    @PostMapping("/restore")
+    public ResponseEntity<ResultResponse> restorePassword (@RequestBody RestorePasswordRequest request) {
+        ResultResponse resultResponse = new ResultResponse();
+        if (userRepository.findByEmail(request.getEmail()).isPresent()) {
+            char[] text = new char[18];
+            String characters = "1234567890abcdefghijklmnoprst";
+            Random rnd = new Random();
+            for (int i = 0; i < 18; i++) {
+                text[i] = characters.charAt(rnd.nextInt(characters.length()));
+            }
+            String hash = new String(text);
+            String message = "/login/change-password/" + hash;
+            User user = userRepository.findByEmail(request.getEmail()).get();
+            user.setCode(hash);
+            userRepository.save(user);
+            emailService.sendSimpleMessage(request.getEmail(),message);
+            resultResponse.setResult(true);
+            return ResponseEntity.ok(resultResponse);
+        }
+        resultResponse.setResult(false);
+        return ResponseEntity.ok(resultResponse);
+    }
+
+    @PostMapping("/password")
+    public ResponseEntity<ResultResponse> changePassword (@RequestBody ChangePasswordRequest changePasswordRequest) {
+        ResultResponse resultResponse = new ResultResponse();
+        resultResponse.setResult(false);
+        if (authService.changePasswordErrors(changePasswordRequest) == null) {
+            resultResponse.setResult(true);
+            return ResponseEntity.ok(resultResponse);
+        }
+        resultResponse.setErrors(authService.changePasswordErrors(changePasswordRequest));
+        return ResponseEntity.ok(resultResponse);
     }
 }

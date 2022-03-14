@@ -11,7 +11,7 @@ import java.util.Date;
 public class PostComment {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @NotNull
     private int id;
 

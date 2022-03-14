@@ -2,6 +2,7 @@ package main.model;
 
 import com.sun.istack.NotNull;
 import lombok.*;
+import main.model.enums.Code;
 import main.model.enums.Value;
 import javax.persistence.*;
 
@@ -11,25 +12,21 @@ import javax.persistence.*;
 public class GlobalSetting {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @NotNull
     private int id;
 
     @Column (columnDefinition = "VARCHAR(255)")
     @NotNull
-    private String code;
+    @Enumerated(EnumType.STRING)
+    private Code code;
 
     @Column (columnDefinition = "VARCHAR(255)")
     @NotNull
     private String name;
 
-    @Column (columnDefinition = "VARCHAR(255)", insertable = false, updatable =false)
+    @Column (columnDefinition = "VARCHAR(255)")
     @NotNull
     @Enumerated(EnumType.STRING)
     private Value value;
-
-    @Override
-    public int hashCode() {
-        return getClass().hashCode();
-    }
 }

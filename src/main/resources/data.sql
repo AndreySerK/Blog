@@ -6,13 +6,13 @@ INSERT INTO global_settings (id, code, name, value) VALUES
 (3, 'STATISTICS_IS_PUBLIC','Показывать всем статистику блога','YES');
 
 INSERT INTO users (id, is_moderator, reg_time, name, email, password, code, photo) VALUES
-(1, 1, '2021-12-01 23:59:59', 'Petr Ivanov', 'petr@ivanov.com', '$2a$12$QXbAmPIQcSgbwaPG7kzGiOUJ3YC6KS7LKjmLW6Jgk8egBY0oXO9ZC', null, 'C:\Users\1111\Blog\src\main\resources\user_photo\Petr.jpeg');
+(1, 1, '2021-12-01 23:59:59', 'Petr Ivanov', 'petr@ivanov.com', '$2a$12$QXbAmPIQcSgbwaPG7kzGiOUJ3YC6KS7LKjmLW6Jgk8egBY0oXO9ZC', null, 'user_photo/Petr.jpeg');
 INSERT INTO users (id, is_moderator, reg_time, name, email, password, code, photo) VALUES
-(2, 1, '2021-12-02 23:59:59', 'Ivan Petrov', 'ivan@petrov.com', '$2a$12$azzyW//klMr3G4e9Eiw/ze/EpEisVH.My3vjnnQCixfO59ihIL9BS', null, 'C:\Users\1111\Blog\src\main\resources\user_photo\Petr.jpeg');
+(2, 1, '2021-12-02 23:59:59', 'Ivan Petrov', 'ivan@petrov.com', '$2a$12$azzyW//klMr3G4e9Eiw/ze/EpEisVH.My3vjnnQCixfO59ihIL9BS', null, 'C:\\Users\\1111\\Blog\\src\\main\\resources\\user_photo\\Petr.jpeg');
 INSERT INTO users (id, is_moderator, reg_time, name, email, password, code, photo) VALUES
-(3, 0, '2021-12-03 23:59:59', 'John Smith', 'jhon@smith.com', '$2a$12$azzyW//klMr3G4e9Eiw/ze/EpEisVH.My3vjnnQCixfO59ihIL9BS', null, 'C:\Users\1111\Blog\src\main\resources\user_photo\Petr.jpeg');
+(3, 0, '2021-12-03 23:59:59', 'John Smith', 'jhon@smith.com', '$2a$12$azzyW//klMr3G4e9Eiw/ze/EpEisVH.My3vjnnQCixfO59ihIL9BS', null, 'C:\\Users\\1111\\Blog\\src\\main\\resources\\user_photo\\Petr.jpeg');
 INSERT INTO users (id, is_moderator, reg_time, name, email, password, code, photo) VALUES
-(4, 0, '2021-10-03 23:59:59', 'John Ott', 'jhon@ott.com', '$2a$12$azzyW//klMr3G4e9Eiw/ze/EpEisVH.My3vjnnQCixfO59ihIL9BS', null, 'C:\Users\1111\Blog\src\main\resources\user_photo\Petr.jpeg');
+(4, 0, '2021-10-03 23:59:59', 'John Ott', 'jhon@ott.com', '$2a$12$azzyW//klMr3G4e9Eiw/ze/EpEisVH.My3vjnnQCixfO59ihIL9BS', null, 'C:\\Users\\1111\\Blog\\src\\main\\resources\\user_photo\\Petr.jpeg');
 
 INSERT INTO posts (id, is_active, moderation_status, moderator_id, user_id, time, title, text, view_count) VALUES
 (1, 1, 'ACCEPTED', 1, 1, '2021-12-01 23:00:59', 'First post', 'Central to the Spring Framework is its inversion of control (IoC) container, which provides a consistent means of configuring and managing Java objects using reflection. The container is responsible for managing object lifecycles of specific objects: creating these objects, calling their initialization methods, and configuring these objects by wiring them together.

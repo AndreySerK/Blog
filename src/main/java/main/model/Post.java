@@ -15,14 +15,8 @@ import java.util.List;
 @Table(name = "posts")
 public class Post {
 
-    @ManyToMany(cascade = CascadeType.ALL)
-    @JoinTable(name = "tag2post",
-            joinColumns = @JoinColumn(name = "post_id"),
-            inverseJoinColumns = @JoinColumn(name = "tag_id"))
-    public List <Tag> tags;
-
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @NotNull
     private int id;
 
@@ -35,7 +29,7 @@ public class Post {
     @ToString.Exclude
     private List<Vote> voteList;
 
-    @OneToMany (mappedBy = "post",cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany (mappedBy = "post",cascade = CascadeType.ALL)
     @ToString.Exclude
     private List<PostComment> postCommentList;
 
@@ -71,9 +65,10 @@ public class Post {
     @NotNull
     private int viewCount;
 
-    @Override
-    public int hashCode() {
-        return getClass().hashCode();
-    }
+    @ManyToMany(cascade = CascadeType.ALL)
+    @JoinTable(name = "tag2post",
+            joinColumns = @JoinColumn(name = "post_id"),
+            inverseJoinColumns = @JoinColumn(name = "tag_id"))
+    public List <Tag> tags;
 
 }

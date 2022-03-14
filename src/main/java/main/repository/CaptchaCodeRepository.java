@@ -10,4 +10,5 @@ import java.util.List;
 @Repository
 public interface CaptchaCodeRepository extends JpaRepository<CaptchaCode, Integer> {
     List<CaptchaCode> findCaptchaCodeBySecretCode (String secretCode);
+    CaptchaCode getCaptchaCodeBySecretCode (String secretCode);
 }

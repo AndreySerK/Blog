@@ -4,7 +4,9 @@ import lombok.RequiredArgsConstructor;
 import main.DTO.AuthUserDto;
 import main.DTO.ErrorsDto;
 import main.DTO.RegisterDto;
+import main.api.request.ChangePasswordRequest;
 import main.api.request.RegisterRequest;
+import main.model.CaptchaCode;
 import main.model.Post;
 import main.model.User;
 import main.model.enums.ModerationStatus;
@@ -94,5 +96,21 @@ public class AuthService {
         }
         registerDtoErr.setErrors(errorsDto);
         return registerDtoErr;
+    }
+
+    public ErrorsDto changePasswordErrors (ChangePasswordRequest request) {
+        ErrorsDto errorsDto = new ErrorsDto();
+        CaptchaCode captchaCode = captchaCodeRepository.getCaptchaCodeBySecretCode(request.getCaptchaSecret());
+        if (captchaCode == null) {
+            errorsDto.setCode("Ссылка для восстановления пароля устарела");
+        } else {
+            if (!request.getCaptcha().equals(captchaCode.getCode())) {
+                errorsDto.setCode("Код с картинки введён неверно");
+            }
+            if (request.getPassword().length() < 6) {
+                errorsDto.setPassword("Пароль короче 6-ти символов");
+            }
+        }
+        return errorsDto;
     }
 }

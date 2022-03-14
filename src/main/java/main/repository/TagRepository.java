@@ -17,4 +17,5 @@ public interface TagRepository extends JpaRepository <Tag, Integer> {
                     "DESC LIMIT 1"
                     ,nativeQuery = true)
     Double getCountOfMostPopularTag ();
+    Tag getTagByName(String name);
 }

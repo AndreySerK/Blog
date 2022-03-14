@@ -11,7 +11,7 @@ import java.util.Date;
 public class CaptchaCode {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @NotNull
     private int id;
 
@@ -27,8 +27,4 @@ public class CaptchaCode {
     @NotNull
     private String secretCode;
 
-    @Override
-    public int hashCode() {
-        return getClass().hashCode();
-    }
 }
