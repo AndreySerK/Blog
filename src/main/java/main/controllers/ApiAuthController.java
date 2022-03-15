@@ -101,7 +101,7 @@ public class ApiAuthController {
                 text[i] = characters.charAt(rnd.nextInt(characters.length()));
             }
             String hash = new String(text);
-            String message = "/login/change-password/" + hash;
+            String message = "http://localhost:8080/login/change-password/" + hash;
             User user = userRepository.findByEmail(request.getEmail()).get();
             user.setCode(hash);
             userRepository.save(user);
