@@ -2,7 +2,6 @@ package main.controllers;
 
 import lombok.RequiredArgsConstructor;
 import main.DTO.PostByIdDto;
-import main.api.request.AddCommentRequest;
 import main.api.request.NewPostRequest;
 import main.api.request.PostVoteRequest;
 import main.api.response.NewPostResponse;

@@ -377,9 +377,14 @@ public class PostService {
                 newPost.setTime(timestampToDate(newPostRequest.getTimestamp()));
             }
             newPost.setIsActive(newPostRequest.getActive());
+            if (globalSettingRepository.findByCode(Code.POST_PREMODERATION).getValue().equals(Value.YES)) {
+                newPost.setModerationStatus(ModerationStatus.NEW);
+            } else if (newPost.getIsActive() == 1) {
+                newPost.setModerationStatus(ModerationStatus.ACCEPTED);
+            }
             newPost.setTitle(newPostRequest.getTitle());
             newPost.setText(newPostRequest.getText());
-            newPost.setUser(userRepository.findByEmail(principal.getName()).get());
+            newPost.setUser(userRepository.findByEmail(principal.getName()).orElseThrow());
             newPost.setViewCount(0);
             postRepository.save(newPost);
             newPostRequest.getTags().forEach(t -> {
