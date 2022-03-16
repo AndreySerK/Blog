@@ -13,7 +13,7 @@ public class EmailService {
 
     private final JavaMailSender emailSender;
 
-    public void sendSimpleMessage(String to, String text) {
+    public void sendRestorePasswordLink(String to, String text) {
         SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(to);
         message.setSubject("Password restore");

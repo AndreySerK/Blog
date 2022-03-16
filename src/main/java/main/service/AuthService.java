@@ -6,12 +6,15 @@ import main.DTO.ErrorsDto;
 import main.DTO.RegisterDto;
 import main.api.request.ChangePasswordRequest;
 import main.api.request.RegisterRequest;
+import main.api.request.RestorePasswordRequest;
+import main.api.response.ResultResponse;
 import main.model.CaptchaCode;
 import main.model.Post;
 import main.model.User;
 import main.model.enums.ModerationStatus;
 import main.repository.CaptchaCodeRepository;
 import main.repository.UserRepository;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,6 +23,7 @@ import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 import java.util.Date;
 import java.util.List;
+import java.util.Random;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -33,6 +37,7 @@ public class AuthService {
     private final UserRepository userRepository;
     private final CaptchaCodeRepository captchaCodeRepository;
     private final PasswordEncoder passwordEncoder;
+    private final EmailService emailService;
 
     public int getPostsForModerationCount () {
         return userRepository.getPostsForModerationCount();
@@ -112,5 +117,27 @@ public class AuthService {
             }
         }
         return errorsDto;
+    }
+
+    public ResultResponse getPasswordRestoreResult (RestorePasswordRequest request) {
+        ResultResponse resultResponse = new ResultResponse();
+        if (userRepository.findByEmail(request.getEmail()).isPresent()) {
+            char[] text = new char[18];
+            String characters = "1234567890abcdefghijklmnoprst";
+            Random rnd = new Random();
+            for (int i = 0; i < 18; i++) {
+                text[i] = characters.charAt(rnd.nextInt(characters.length()));
+            }
+            String hash = new String(text);
+            String message = "https://kuznetsov-java-blog.herokuapp.com/login/change-password/" + hash;
+            User user = userRepository.findByEmail(request.getEmail()).get();
+            user.setCode(hash);
+            userRepository.save(user);
+            emailService.sendRestorePasswordLink(request.getEmail(),message);
+            resultResponse.setResult(true);
+            return resultResponse;
+        }
+        resultResponse.setResult(false);
+        return resultResponse;
     }
 }

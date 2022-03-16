@@ -15,10 +15,7 @@ import main.model.enums.Code;
 import main.model.enums.Value;
 import main.repository.GlobalSettingRepository;
 import main.repository.UserRepository;
-import main.service.AuthService;
-import main.service.CaptchaCodeService;
-import main.service.EmailService;
-import main.service.UserService;
+import main.service.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -44,11 +41,9 @@ import java.util.Random;
 public class ApiAuthController {
 
     private final AuthService authService;
-    private final GlobalSettingRepository globalSettingRepository;
+    private final SettingsService settingsService;
     private final UserService userService;
-    private final EmailService emailService;
     private final CaptchaCodeService codeService;
-    private final UserRepository userRepository;
     private final AuthenticationManager authenticationManager;
 
     @GetMapping("/check")
@@ -68,7 +63,7 @@ public class ApiAuthController {
     @Transactional
     public ResponseEntity<?> registerNewUser (@RequestBody RegisterRequest registerRequest)
     {
-        if (globalSettingRepository.findByCode(Code.MULTIUSER_MODE).getValue().equals(Value.NO)) {
+        if (settingsService.getGlobalSettingValueByCode(Code.MULTIUSER_MODE).equals(Value.NO)) {
             return ResponseEntity.status(404).body(null);
         }
         return ResponseEntity.ok(authService.getRegisterDto(registerRequest));
@@ -99,25 +94,8 @@ public class ApiAuthController {
 
     @PostMapping("/restore")
     public ResponseEntity<ResultResponse> restorePassword (@RequestBody RestorePasswordRequest request) {
-        ResultResponse resultResponse = new ResultResponse();
-        if (userRepository.findByEmail(request.getEmail()).isPresent()) {
-            char[] text = new char[18];
-            String characters = "1234567890abcdefghijklmnoprst";
-            Random rnd = new Random();
-            for (int i = 0; i < 18; i++) {
-                text[i] = characters.charAt(rnd.nextInt(characters.length()));
-            }
-            String hash = new String(text);
-            String message = "http://localhost:8080/login/change-password/" + hash;
-            User user = userRepository.findByEmail(request.getEmail()).get();
-            user.setCode(hash);
-            userRepository.save(user);
-            emailService.sendSimpleMessage(request.getEmail(),message);
-            resultResponse.setResult(true);
-            return ResponseEntity.ok(resultResponse);
-        }
-        resultResponse.setResult(false);
-        return ResponseEntity.ok(resultResponse);
+
+        return ResponseEntity.ok(authService.getPasswordRestoreResult(request));
     }
 
     @PostMapping("/password")

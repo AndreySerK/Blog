@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import main.api.request.SettingsRequest;
 import main.api.response.SettingsResponse;
 import main.model.GlobalSetting;
+import main.model.enums.Code;
 import main.model.enums.Value;
 import main.repository.GlobalSettingRepository;
 import org.springframework.stereotype.Service;
@@ -62,5 +63,9 @@ public class SettingsService {
             statisticsIsPublic.setValue(Value.NO);
             globalSettingRepository.save(statisticsIsPublic);
         }
+    }
+
+    public Value getGlobalSettingValueByCode (Code code) {
+        return globalSettingRepository.findByCode(Code.MULTIUSER_MODE).getValue();
     }
 }
