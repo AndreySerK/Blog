@@ -11,11 +11,15 @@ import main.api.request.LoginRequest;
 import main.api.response.LoginResponse;
 import main.api.response.ResultResponse;
 import main.model.User;
+import main.model.enums.Code;
+import main.model.enums.Value;
+import main.repository.GlobalSettingRepository;
 import main.repository.UserRepository;
 import main.service.AuthService;
 import main.service.CaptchaCodeService;
 import main.service.EmailService;
 import main.service.UserService;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -40,6 +44,7 @@ import java.util.Random;
 public class ApiAuthController {
 
     private final AuthService authService;
+    private final GlobalSettingRepository globalSettingRepository;
     private final UserService userService;
     private final EmailService emailService;
     private final CaptchaCodeService codeService;
@@ -61,10 +66,12 @@ public class ApiAuthController {
 
     @PostMapping("/register")
     @Transactional
-    public RegisterDto getRegisterResult (@RequestBody RegisterRequest registerRequest)
+    public ResponseEntity<?> registerNewUser (@RequestBody RegisterRequest registerRequest)
     {
-
-        return authService.getRegisterDto(registerRequest);
+        if (globalSettingRepository.findByCode(Code.MULTIUSER_MODE).getValue().equals(Value.NO)) {
+            return ResponseEntity.status(404).body(null);
+        }
+        return ResponseEntity.ok(authService.getRegisterDto(registerRequest));
     }
 
     @PostMapping("/login")
