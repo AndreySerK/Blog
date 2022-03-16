@@ -1,1 +1,1 @@
-web: java -jar target/Blog-1.0.jar
+web: $JAVA_OPTS java -jar target/Blog-1.0.jar -Dserver.port=$PORT $JAR_OPTS
