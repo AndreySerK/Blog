@@ -128,7 +128,7 @@ public class ApiGeneralController {
         return ResponseEntity.ok(postService.getAddCommentErr(addCommentRequest));
     }
 
-    @PostMapping("/moderate")
+    @PostMapping("/moderation")
     @PreAuthorize("hasAuthority('user:moderate')")
     public ResponseEntity<ResultResponse> postModerate (@RequestBody PostModerateRequest postModerateRequest, Principal principal) {
         ResultResponse resultResponse = new ResultResponse();

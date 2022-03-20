@@ -90,9 +90,7 @@ public class ApiPostController {
         if (postByIdDto == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND);
         }
-        Post post = postService.getActiveAcceptedPostByIdBeforeCurrentTime(id);
-
-        post.setViewCount(post.getViewCount() + 1);
+        postService.addViewToPost(id);
         return new ResponseEntity<>(postByIdDto, HttpStatus.OK);
     }
 
@@ -153,15 +151,15 @@ public class ApiPostController {
         return new ResponseEntity<>(postsResponse, HttpStatus.OK);
     }
 
-    @PostMapping("/")
+    @PostMapping("")
     @PreAuthorize("hasAuthority('user:write')")
     public ResponseEntity<NewPostResponse> newPost(@RequestBody NewPostRequest newPostRequest, Principal principal) {
-
-        return ResponseEntity.ok(postService.addNewPost(newPostRequest, principal));
+        NewPostResponse newPostResponse = postService.addNewPost(newPostRequest,principal);
+        return ResponseEntity.ok(newPostResponse);
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasAuthority('user:moderate')")
+    @PreAuthorize("hasAuthority('user:write')")
     public ResponseEntity<NewPostResponse> changePost(@PathVariable int id,
             @RequestBody NewPostRequest newPostRequest, Principal principal) {
 

@@ -26,10 +26,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.Principal;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @Service
@@ -39,18 +36,27 @@ public class UserService {
     private final UserRepository userRepository;
     private final VoteRepository voteRepository;
     private final SecurityConfig securityConfig;
+    private final PostService postService;
 
     public List<User> getUsers () {
         return (List<User>) userRepository.findAll();
     }
 
-    public LoginResponse loginResponse (String email) {
+    public User findUserByEmail (String email) {
+        return userRepository.findByEmail(email).orElseThrow();
+    }
 
+    public LoginResponse getLoginResponse (String email) {
+        LoginResponse loginResponse = new LoginResponse();
         User currentUser = userRepository.findByEmail(
-                email).orElseThrow(() -> new UsernameNotFoundException(email));
+                email).orElseThrow();
         UserLoginResponse userResponse = UserMapper.INSTANCE.userToUserResponse(currentUser);
         userResponse.setModeration(currentUser.getIsModerator() == 1);
-        LoginResponse loginResponse = new LoginResponse();
+        if (currentUser.getIsModerator() == 1) {
+            userResponse.setModerationCount(postService.getCountOfNewPosts());
+            userResponse.setSettings(true);
+        }
+        userResponse.setModerationCount(0);
         loginResponse.setResult(true);
         loginResponse.setUserLoginResponse(userResponse);
         return loginResponse;

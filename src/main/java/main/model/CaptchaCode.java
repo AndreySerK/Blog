@@ -1,6 +1,5 @@
 package main.model;
 
-import com.sun.istack.NotNull;
 import lombok.*;
 import javax.persistence.*;
 import java.util.Date;
@@ -12,19 +11,15 @@ public class CaptchaCode {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @NotNull
     private int id;
 
-    @NotNull
-    @Column(columnDefinition = "DATETIME")
+    @Column(columnDefinition = "DATETIME", nullable = false)
     private Date time;
 
-    @Column (columnDefinition = "TINYTEXT")
-    @NotNull
+    @Column (columnDefinition = "TINYTEXT", nullable = false)
     private String code;
 
-    @Column (name = "secret_code", columnDefinition = "TINYTEXT")
-    @NotNull
+    @Column (name = "secret_code", columnDefinition = "TINYTEXT", nullable = false)
     private String secretCode;
 
 }

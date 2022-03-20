@@ -1,6 +1,8 @@
 package main.repository;
 
 import main.model.Post;
+import main.model.User;
+import main.model.enums.ModerationStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -13,4 +15,6 @@ public interface PostRepository extends JpaRepository<Post, Integer> {
     Integer getCountOfAllPosts();
 
     List<Post> getPostsByUserId(int userId);
+    Post getPostById (int id);
+    List<Post> getPostsByModerationStatus (ModerationStatus moderationStatus);
 }

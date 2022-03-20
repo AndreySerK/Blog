@@ -12,13 +12,12 @@ public class PostComment {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @NotNull
     private int id;
 
-    @OneToOne
-    @JoinColumn(name = "user_id", referencedColumnName = "id")
-    @ToString.Exclude
-    private User user;
+//    @OneToOne
+//    @JoinColumn(name = "user_id", referencedColumnName = "id")
+//    @ToString.Exclude
+//    private User user;
 
     @ManyToOne (fetch = FetchType.LAZY)
     @JoinColumn(name = "post_id", referencedColumnName = "id")
@@ -28,19 +27,15 @@ public class PostComment {
     @Column(name = "parent_id")
     private Integer parentId;
 
-    @Column(name = "user_id", insertable = false, updatable =false)
-    @NotNull
+    @Column(name = "user_id", nullable = false)
     private int userId;
 
-    @Column(name = "post_id", insertable = false, updatable =false)
-    @NotNull
+    @Column(name = "post_id", insertable = false, updatable =false, nullable = false)
     private int postId;
 
-    @NotNull
-    @Column(columnDefinition = "DATETIME")
+    @Column(columnDefinition = "DATETIME", nullable = false)
     private Date time;
 
-    @Column (columnDefinition = "TEXT")
-    @NotNull
+    @Column (columnDefinition = "TEXT", nullable = false)
     private String text;
 }

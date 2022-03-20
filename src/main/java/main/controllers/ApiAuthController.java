@@ -10,7 +10,6 @@ import main.api.response.AuthResponse;
 import main.api.request.LoginRequest;
 import main.api.response.LoginResponse;
 import main.api.response.ResultResponse;
-import main.model.User;
 import main.model.enums.Code;
 import main.model.enums.Value;
 import main.repository.GlobalSettingRepository;
@@ -21,7 +20,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
@@ -51,7 +52,7 @@ public class ApiAuthController {
         if (principal == null) {
             return ResponseEntity.ok(new LoginResponse());
         }
-        return ResponseEntity.ok(userService.loginResponse(principal.getName()));
+        return ResponseEntity.ok(userService.getLoginResponse(principal.getName()));
     }
 
     @GetMapping("/captcha")
@@ -70,16 +71,14 @@ public class ApiAuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<LoginResponse> login (@RequestBody LoginRequest loginRequest) {
-
-        Authentication auth = authenticationManager
-                .authenticate(
-                        new UsernamePasswordAuthenticationToken(loginRequest.getEmail(),loginRequest.getPassword()));
-        SecurityContextHolder.getContext().setAuthentication(auth);
-        org.springframework.security.core.userdetails.User user =
-                (org.springframework.security.core.userdetails.User) auth.getPrincipal();
-
-        return ResponseEntity.ok(userService.loginResponse(user.getUsername()));
+    public ResponseEntity<LoginResponse> login (@RequestBody LoginRequest loginRequest) throws AuthenticationException {
+            Authentication auth = authenticationManager
+                    .authenticate(
+                            new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword()));
+            SecurityContextHolder.getContext().setAuthentication(auth);
+        User user = (User) auth.getPrincipal();
+        main.model.User currentUser = userService.findUserByEmail(user.getUsername());
+        return ResponseEntity.ok(userService.getLoginResponse(currentUser.getEmail()));
     }
 
     @GetMapping("/logout")

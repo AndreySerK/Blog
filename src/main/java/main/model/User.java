@@ -20,15 +20,11 @@ public class User {
     @ToString.Exclude
     private List<Post> posts;
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @ToString.Exclude
-    private GlobalSetting setting;
-
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     @ToString.Exclude
     private List<Vote> votes;
 
-    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @ToString.Exclude
     private PostComment postComment;
 
@@ -57,11 +53,6 @@ public class User {
 
     @Column (columnDefinition = "TEXT")
     private String photo;
-
-    @Override
-    public int hashCode() {
-        return getClass().hashCode();
-    }
 
     public Role getRole() {
         return isModerator == 1 ? Role.MODERATOR : Role.USER;

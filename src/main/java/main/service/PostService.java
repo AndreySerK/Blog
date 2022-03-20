@@ -36,6 +36,7 @@ import java.util.stream.Collectors;
 public class PostService {
 
     private final PostRepository postRepository;
+    private final Tag2postRepository tag2postRepository;
     private final GlobalSettingRepository globalSettingRepository;
     private final PostCommentRepository postCommentRepository;
     private final VoteRepository voteRepository;
@@ -55,7 +56,8 @@ public class PostService {
         Pageable nextPage = PageRequest.of(offset, limit);
         return postRepository.findAll(nextPage).getContent()
                 .stream()
-                .filter(post -> post.getModeratorId() == getCurrentUserIdByEmail(email))
+                .filter(post -> post.getModeratorId() == getCurrentUserIdByEmail(email)
+                || post.getModerationStatus().equals(ModerationStatus.NEW))
                 .collect(Collectors.toList());
     }
 
@@ -107,6 +109,12 @@ public class PostService {
             return null;
         }
         return null;
+    }
+
+    public void addViewToPost (Integer id) {
+        Post post = getActiveAcceptedPostByIdBeforeCurrentTime(id);
+        post.setViewCount(post.getViewCount() + 1);
+        postRepository.save(post);
     }
 
     public PostByIdDto getPostByIdDto (Integer id) {
@@ -387,19 +395,22 @@ public class PostService {
             newPost.setUser(userRepository.findByEmail(principal.getName()).orElseThrow());
             newPost.setViewCount(0);
             postRepository.save(newPost);
-            newPostRequest.getTags().forEach(t -> {
-                Tag tag = tagRepository.getTagByName(t);
-                Tag2post tag2post = new Tag2post();
-                if (tag == null) {
-                    Tag newTag = new Tag();
-                    newTag.setName(t);
-                    tagRepository.save(newTag);
-                    tag2post.setTagId(tagRepository.getTagByName(t).getId());
-                } else {
-                    tag2post.setTagId(tag.getId());
-                }
-                tag2post.setPostId(newPost.getId());
-            });
+            Tag2post tag2post = new Tag2post();
+            if (newPostRequest.getTags().size() > 0) {
+                newPostRequest.getTags().forEach(t -> {
+                    Tag tag = tagRepository.getTagByName(t);
+                    if (tag == null) {
+                        Tag newTag = new Tag();
+                        newTag.setName(t);
+                        tagRepository.save(newTag);
+                        tag2post.setTagId(tagRepository.getTagByName(t).getId());
+                    } else {
+                        tag2post.setTagId(tag.getId());
+                    }
+                    tag2post.setPostId(newPost.getId());
+                    tag2postRepository.save(tag2post);
+                });
+            }
             postsResponse.setResult(true);
             return postsResponse;
         }
@@ -431,19 +442,22 @@ public class PostService {
                 post.setModerationStatus(ModerationStatus.NEW);
             }
             postRepository.save(post);
+            Tag2post tag2post = new Tag2post();
+            if (newPostRequest.getTags().size() > 0) {
             newPostRequest.getTags().forEach(t -> {
-                Tag tag = tagRepository.getTagByName(t);
-                Tag2post tag2post = new Tag2post();
-                if (tag == null) {
-                    Tag newTag = new Tag();
-                    newTag.setName(t);
-                    tagRepository.save(newTag);
-                    tag2post.setTagId(tagRepository.getTagByName(t).getId());
-                } else {
-                    tag2post.setTagId(tag.getId());
-                }
-                tag2post.setPostId(post.getId());
-            });
+                        Tag tag = tagRepository.getTagByName(t);
+                        if (tag == null) {
+                            Tag newTag = new Tag();
+                            newTag.setName(t);
+                            tagRepository.save(newTag);
+                            tag2post.setTagId(tagRepository.getTagByName(t).getId());
+                        } else {
+                            tag2post.setTagId(tag.getId());
+                        }
+                        tag2post.setPostId(post.getId());
+                        tag2postRepository.save(tag2post);
+                    });
+            }
             postResponse.setResult(true);
             return postResponse;
         }
@@ -476,8 +490,8 @@ public class PostService {
         newComment.setText(request.getText());
         newComment.setParentId(request.getParentId());
         newComment.setTime(new Date());
-        newComment.setPost(postRepository.getOne(request.getPostId()));
-        newComment.setUser(userRepository.findByEmail(principal.getName()).orElseThrow());
+        newComment.setPost(postRepository.findById(request.getPostId()).orElseThrow());
+        newComment.setUserId(userRepository.findByEmail(principal.getName()).orElseThrow().getId());
         postCommentRepository.save(newComment);
         addCommentResponse.setId(postCommentRepository.getPostCommentByText(request.getText()).getId());
         return addCommentResponse;
@@ -498,13 +512,16 @@ public class PostService {
             return false;
         }
         Post postToModerate = postRepository.findById(request.getPostId()).orElseThrow();
-        if (request.getDecision().equals("declined")) {
+        int moderatorId = getCurrentUserIdByEmail(principal.getName());
+        if (request.getDecision().equals("decline")) {
             postToModerate.setModerationStatus(ModerationStatus.DECLINED);
+            postToModerate.setModeratorId(moderatorId);
             postRepository.save(postToModerate);
             return true;
         }
-        if (request.getDecision().equals("accepted")) {
+        if (request.getDecision().equals("accept")) {
             postToModerate.setModerationStatus(ModerationStatus.ACCEPTED);
+            postToModerate.setModeratorId(moderatorId);
             postRepository.save(postToModerate);
             return true;
         }
@@ -545,7 +562,7 @@ public class PostService {
 
     public ResultResponse setVoteValue (PostVoteRequest request, Principal principal, int voteValue) {
         ResultResponse resultResponse = new ResultResponse();
-        Post post = postRepository.getOne(request.getPostId());
+        Post post = postRepository.getPostById(request.getPostId());
         User currentUser = userRepository.findByEmail(principal.getName()).orElseThrow();
         Vote vote = voteRepository.getVoteByUserAndPost(currentUser,post);
         if (vote != null) {
@@ -567,6 +584,10 @@ public class PostService {
         voteRepository.save(newVote);
         resultResponse.setResult(true);
         return resultResponse;
+    }
+
+    public int getCountOfNewPosts () {
+        return postRepository.getPostsByModerationStatus(ModerationStatus.NEW).size();
     }
 }
 

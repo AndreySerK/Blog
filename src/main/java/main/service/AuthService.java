@@ -129,7 +129,7 @@ public class AuthService {
                 text[i] = characters.charAt(rnd.nextInt(characters.length()));
             }
             String hash = new String(text);
-            String message = "https://kuznetsov-java-blog.herokuapp.com/login/change-password/" + hash;
+            String message = "http://localhost:8080/login/change-password/" + hash;
             User user = userRepository.findByEmail(request.getEmail()).get();
             user.setCode(hash);
             userRepository.save(user);
