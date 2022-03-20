@@ -10,5 +10,5 @@ public class StatResponse {
      private int likesCount;
      private int dislikesCount;
      private int viewsCount;
-     private Date firstPublication;
+     private long firstPublication;
 }

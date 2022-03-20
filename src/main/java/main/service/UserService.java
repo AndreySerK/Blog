@@ -142,7 +142,7 @@ public class UserService {
         List<Date> dateList = new ArrayList<>();
         posts.forEach(post -> dateList.add(post.getTime()));
         dateList.sort(Comparator.naturalOrder());
-        myStatResponse.setFirstPublication(dateList.get(0));
+        myStatResponse.setFirstPublication(dateList.get(0).getTime()/1000);
         return myStatResponse;
     }
 }

@@ -548,7 +548,7 @@ public class PostService {
         List<Date> dateList = new ArrayList<>();
         posts.forEach(post -> dateList.add(post.getTime()));
         dateList.sort(Comparator.naturalOrder());
-        statResponse.setFirstPublication(dateList.get(0));
+        statResponse.setFirstPublication(dateList.get(0).getTime()/1000);
         return statResponse;
     }
 
