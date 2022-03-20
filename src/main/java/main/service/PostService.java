@@ -538,10 +538,8 @@ public class PostService {
         int dislikeCount = (int) votes.stream()
                 .filter(vote -> vote.getValue() == -1)
                 .count();
-        AtomicInteger viewCount = new AtomicInteger();
-        posts.forEach(post -> {
-            viewCount.addAndGet(post.getViewCount());
-        });
+        int viewCount = posts.stream().mapToInt(Post::getViewCount).sum();
+        statResponse.setViewsCount(viewCount);
         statResponse.setDislikesCount(dislikeCount);
         statResponse.setLikesCount(likesCount);
         statResponse.setPostsCount(posts.size());

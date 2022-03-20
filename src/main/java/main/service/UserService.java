@@ -132,13 +132,11 @@ public class UserService {
         int dislikeCount = (int) votes.stream()
                 .filter(vote -> vote.getValue() == -1)
                 .count();
-        AtomicInteger viewCount = new AtomicInteger();
-        posts.forEach(post -> {
-            viewCount.addAndGet(post.getViewCount());
-        });
+        int viewCount = posts.stream().mapToInt(Post::getViewCount).sum();
         myStatResponse.setDislikesCount(dislikeCount);
         myStatResponse.setLikesCount(likesCount);
         myStatResponse.setPostsCount(posts.size());
+        myStatResponse.setViewsCount(viewCount);
         List<Date> dateList = new ArrayList<>();
         posts.forEach(post -> dateList.add(post.getTime()));
         dateList.sort(Comparator.naturalOrder());
