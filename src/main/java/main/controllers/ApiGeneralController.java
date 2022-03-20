@@ -150,7 +150,6 @@ public class ApiGeneralController {
     }
 
     @GetMapping("/statistics/all")
-    @PreAuthorize("hasAuthority('user:moderate')")
     public ResponseEntity<?> getAllStatistics (Principal principal) {
         if (postService.statisticsIsPublic(principal)) {
             return ResponseEntity.ok(postService.getStatResponse());
