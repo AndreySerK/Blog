@@ -150,8 +150,8 @@ public class ApiGeneralController {
     }
 
     @GetMapping("/statistics/all")
-    public ResponseEntity<?> getAllStatistics (Principal principal) {
-        if (postService.statisticsIsPublic(principal)) {
+    public ResponseEntity<?> getAllStatistics () {
+        if (postService.statisticsIsPublic()) {
             return ResponseEntity.ok(postService.getStatResponse());
         }
         return new ResponseEntity<>(null,HttpStatus.UNAUTHORIZED);

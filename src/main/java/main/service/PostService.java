@@ -550,9 +550,8 @@ public class PostService {
         return statResponse;
     }
 
-    public boolean statisticsIsPublic (Principal principal) {
-        if (userRepository.findByEmail(principal.getName()).orElseThrow().getIsModerator() == 0
-                || globalSettingRepository.findByCode(Code.STATISTICS_IS_PUBLIC).getValue().equals(Value.NO)) {
+    public boolean statisticsIsPublic () {
+        if ( globalSettingRepository.findByCode(Code.STATISTICS_IS_PUBLIC).getValue().equals(Value.NO)) {
             return false;
         }
         return true;
