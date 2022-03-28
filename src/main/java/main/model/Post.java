@@ -1,24 +1,28 @@
 package main.model;
-import com.fasterxml.jackson.annotation.JsonBackReference;
+
 import com.sun.istack.NotNull;
-import lombok.Data;
-import lombok.ToString;
+import lombok.*;
 import main.model.enums.ModerationStatus;
+import org.hibernate.Hibernate;
+
 import javax.persistence.*;
-import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 
 
 @Entity
-@Data
+@Getter
+@Setter
+@ToString
+@RequiredArgsConstructor
 @Table(name = "posts")
 public class Post {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @NotNull
-    private int id;
+    private Integer id;
 
     @ManyToOne (fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
@@ -69,6 +73,19 @@ public class Post {
     @JoinTable(name = "tag2post",
             joinColumns = @JoinColumn(name = "post_id"),
             inverseJoinColumns = @JoinColumn(name = "tag_id"))
+    @ToString.Exclude
     public List <Tag> tags;
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || Hibernate.getClass(this) != Hibernate.getClass(o)) return false;
+        Post post = (Post) o;
+        return id != null && Objects.equals(id, post.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
+    }
 }
