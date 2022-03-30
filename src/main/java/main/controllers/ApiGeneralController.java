@@ -103,7 +103,7 @@ public class ApiGeneralController {
             return new ResponseEntity<>(loadImageResponse,HttpStatus.BAD_REQUEST);
         }
             byte[] bytes = file.getBytes();
-            String uploadDir = "/upload/" + randomName.substring(0,2);
+            String uploadDir = "src/main/resources/upload/" + randomName.substring(0,2);
             new File(uploadDir).mkdirs();
             uploadDir = uploadDir + "/" + randomName.substring(3,5);
             new File(uploadDir).mkdirs();
@@ -112,7 +112,7 @@ public class ApiGeneralController {
             Path path = Paths.get(uploadDir + file.getOriginalFilename() + ".png");
             Files.write(path, bytes);
 
-            return ResponseEntity.ok(path.toString());
+            return ResponseEntity.ok(path.toString().substring(17));
     }
 
     @PostMapping("/comment")
