@@ -1,7 +1,7 @@
 INSERT INTO global_settings (id, code, name, value) VALUES
-(1, 'MULTIUSER_MODE', 'Многопользовательский режим', 'YES'),
-(2, 'POST_PREMODERATION', 'Премодерация постов', 'NO'),
-(3, 'STATISTICS_IS_PUBLIC', 'Показывать всем статистику блога', 'YES');
+(1, 'MULTIUSER_MODE', '', 'YES'),
+(2, 'POST_PREMODERATION', '', 'NO'),
+(3, 'STATISTICS_IS_PUBLIC', '', 'YES');
 
 INSERT INTO posts (id, is_active, moderation_status, moderator_id, text, time, title, user_id, view_count) VALUES
 (1, 1, 'ACCEPTED', NULL, 'The Spring Framework has its own Aspect-oriented programming (AOP) framework that modularizes cross-cutting concerns in aspects. The motivation for creating a separate AOP framework comes from the belief that it should be possible to provide basic AOP features without too much complexity in either design, implementation, or configuration. The Spring AOP framework also takes full advantage of the Spring container', '2022-03-19 22:32:52', 'post', 1, 5),

@@ -43,30 +43,30 @@ public class PostService {
     private final UserRepository userRepository;
     private final TagRepository tagRepository;
 
-    private Date timestampToDate (Timestamp timestamp) {
-        return  new Date(timestamp.getTime());
+    private Date timestampToDate(Timestamp timestamp) {
+        return new Date(timestamp.getTime());
     }
 
-    private List<Post> getPostsWithLimitAndOffset (int offset, int limit) {
+    private List<Post> getPostsWithLimitAndOffset(int offset, int limit) {
         Pageable nextPage = PageRequest.of(offset, limit);
         return postRepository.findAll(nextPage).getContent();
     }
 
-    private List<Post> getPostsWithLimitAndOffsetByModeratorId (int offset, int limit, String email) {
+    private List<Post> getPostsWithLimitAndOffsetByModeratorId(int offset, int limit, String email) {
         Pageable nextPage = PageRequest.of(offset, limit);
         return postRepository.findAll(nextPage).getContent()
                 .stream()
                 .filter(post -> post.getModeratorId() == getCurrentUserIdByEmail(email)
-                || post.getModerationStatus().equals(ModerationStatus.NEW))
+                        || post.getModerationStatus().equals(ModerationStatus.NEW))
                 .collect(Collectors.toList());
     }
 
-    private Integer getCurrentUserIdByEmail (String email) {
-       return   userRepository.findByEmail(email)
-               .orElseThrow(() -> new UsernameNotFoundException("not found")).getId();
+    private Integer getCurrentUserIdByEmail(String email) {
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("not found")).getId();
     }
 
-    private List<Post> getPostsWithLimitAndOffsetByDate (int offset, int limit, String date) {
+    private List<Post> getPostsWithLimitAndOffsetByDate(int offset, int limit, String date) {
 
         return getPostsWithLimitAndOffset(offset, limit)
                 .stream()
@@ -74,7 +74,7 @@ public class PostService {
                 .collect(Collectors.toList());
     }
 
-    private List<Post> getPostsWithLimitAndOffsetByTag (int offset, int limit, String tag) {
+    private List<Post> getPostsWithLimitAndOffsetByTag(int offset, int limit, String tag) {
         List<Post> posts = new ArrayList<>();
         getPostsWithLimitAndOffset(offset, limit)
                 .forEach(post -> {
@@ -88,7 +88,7 @@ public class PostService {
         return posts;
     }
 
-    private List<Post> getActiveAcceptedPostsBeforeCurrentTime () {
+    private List<Post> getActiveAcceptedPostsBeforeCurrentTime() {
         return postRepository
                 .findAll()
                 .stream()
@@ -98,7 +98,7 @@ public class PostService {
                 .collect(Collectors.toList());
     }
 
-    public Post getActiveAcceptedPostByIdBeforeCurrentTime (Integer id) {
+    public Post getActiveAcceptedPostByIdBeforeCurrentTime(Integer id) {
         if (postRepository.existsById(id)) {
             Post postById = postRepository.getOne(id);
             if (postById.getTime().before(new Date())
@@ -111,21 +111,21 @@ public class PostService {
         return null;
     }
 
-    public void addViewToPost (Integer id) {
+    public void addViewToPost(Integer id) {
         Post post = getActiveAcceptedPostByIdBeforeCurrentTime(id);
         post.setViewCount(post.getViewCount() + 1);
         postRepository.save(post);
     }
 
-    public PostByIdDto getPostByIdDto (Integer id) {
+    public PostByIdDto getPostByIdDto(Integer id) {
         Post post = getActiveAcceptedPostByIdBeforeCurrentTime(id);
         int mSecCountInSec = 1000;
         if (post == null) {
             return null;
         }
-        PostByIdDto postByIdDto= PostMapper.INSTANCE.postToPostByIdDto(post);
+        PostByIdDto postByIdDto = PostMapper.INSTANCE.postToPostByIdDto(post);
         UserForPostDto userForPostDto = UserMapper.INSTANCE.userToUserForPostDto(post.getUser());
-        long timestampInSeconds = post.getTime().getTime()/mSecCountInSec;
+        long timestampInSeconds = post.getTime().getTime() / mSecCountInSec;
         postByIdDto.setTimestamp(timestampInSeconds);
         postByIdDto.setActive(true);
         postByIdDto.setUser(userForPostDto);
@@ -143,11 +143,11 @@ public class PostService {
         List<CommentForPostByIdDto> commentsForPostByIdDtoList = new ArrayList<>();
         post.getPostCommentList()
                 .forEach(postComment -> {
-                     CommentForPostByIdDto comment = CommentMapper.INSTANCE.commentForPostByIdDto(postComment);
-                     UserForCommentDto user = UserMapper.INSTANCE.userToUserForCommentsDto(post.getUser());
-                     comment.setTimestamp(postComment.getTime().getTime()/mSecCountInSec);
-                     comment.setUser(user);
-                     commentsForPostByIdDtoList.add(comment);
+                    CommentForPostByIdDto comment = CommentMapper.INSTANCE.commentForPostByIdDto(postComment);
+                    UserForCommentDto user = UserMapper.INSTANCE.userToUserForCommentsDto(post.getUser());
+                    comment.setTimestamp(postComment.getTime().getTime() / mSecCountInSec);
+                    comment.setUser(user);
+                    commentsForPostByIdDtoList.add(comment);
                 });
         postByIdDto.setComments(commentsForPostByIdDtoList);
         List<TagForPostByIdDto> tagForPostByIdDtoList = new ArrayList<>();
@@ -170,7 +170,7 @@ public class PostService {
         return years;
     }
 
-    public Map<String, Integer> getPostsCountOnDate(Integer year)  {
+    public Map<String, Integer> getPostsCountOnDate(Integer year) {
         Map<String, Integer> postsMap = new HashMap<>();
         List<Post> postsOfYear = new ArrayList<>();
         Set<String> days = new HashSet<>();
@@ -178,25 +178,25 @@ public class PostService {
                 .stream()
                 .filter(post -> post.getTime().toString().contains(year.toString()))
                 .forEach(post -> {
-                    days.add(post.getTime().toString().substring(0,10));
+                    days.add(post.getTime().toString().substring(0, 10));
                     postsOfYear.add(post);
                 });
         days.forEach(day -> {
             postsMap.put(day,
                     (int) postsOfYear.stream()
-                                    .filter(post -> post.getTime().toString().contains(day))
-                                    .count());
-                });
+                            .filter(post -> post.getTime().toString().contains(day))
+                            .count());
+        });
         return postsMap;
     }
 
-    public Integer getCountOfAllPosts () {
+    public Integer getCountOfAllPosts() {
         return postRepository.getCountOfAllPosts();
     }
 
-    public Integer getCountOfPostsWithQuery (String query) {
-        List <Post> postsWithQuery = new ArrayList<>();
-        List <Post> posts =  postRepository.findAll();
+    public Integer getCountOfPostsWithQuery(String query) {
+        List<Post> postsWithQuery = new ArrayList<>();
+        List<Post> posts = postRepository.findAll();
         posts.forEach(post -> {
             if (post.getText().contains(query)) {
                 postsWithQuery.add(post);
@@ -205,7 +205,7 @@ public class PostService {
         return postsWithQuery.size();
     }
 
-    private List<PostDto> getListOfPostDto(List <Post> posts, String moderationStatus, int isActive, Date date) {
+    private List<PostDto> getListOfPostDto(List<Post> posts, String moderationStatus, int isActive, Date date) {
         List<PostDto> postDtoList = new ArrayList<>();
         int mSecCountInSec = 1000;
         posts.stream()
@@ -213,53 +213,10 @@ public class PostService {
                         && post.getIsActive() == isActive
                         && post.getTime().before(date))
                 .forEach(post -> {
-            PostDto postDto = PostMapper.INSTANCE.postToPostDto(post);
-            UserForPostDto user = UserMapper.INSTANCE.userToUserForPostDto(post.getUser());
-            postDto.setUser(user);
-            postDto.setTimestamp(post.getTime().getTime()/mSecCountInSec);
-            postDto.setCommentCount(post.getPostCommentList().size());
-            postDto.setDislikeCount
-                    ((int) post.getVoteList()
-                            .stream()
-                            .filter(vote -> vote.getValue() < 0).count()
-                    );
-            postDto.setLikeCount
-                    ((int) post.getVoteList()
-                            .stream()
-                            .filter(vote -> vote.getValue() > 0)
-                            .count()
-                    );
-            String announce = post.getText();
-            int announceMaxLength = 150;
-            if (announce.length() < announceMaxLength) {
-                postDto.setAnnounce(announce);
-            } else {
-                postDto.setAnnounce(announce.substring(0,149) + "...");
-            }
-            postDtoList.add(postDto);
-        });
-        return postDtoList;
-    }
-
-    public List<Post> getListOfPostByUserId (int offset, int limit) {
-        int currentUserId = userRepository.findByEmail(getCurrentUserEmail())
-                .orElseThrow(() -> new UsernameNotFoundException("user not found")).getId();
-        return getPostsWithLimitAndOffset(offset, limit)
-                .stream()
-                .filter(post -> post.getUserId() == currentUserId)
-                .collect(Collectors.toList());
-    }
-
-    public List<PostDto> getListOfPostDtoByUserId (List <Post> posts, int isActive) {
-        List<PostDto> postDtoList = new ArrayList<>();
-        int mSecCountInSec = 1000;
-        posts.stream()
-                .filter(post -> post.getIsActive() == isActive)
-                .forEach(post -> {
                     PostDto postDto = PostMapper.INSTANCE.postToPostDto(post);
                     UserForPostDto user = UserMapper.INSTANCE.userToUserForPostDto(post.getUser());
                     postDto.setUser(user);
-                    postDto.setTimestamp(post.getTime().getTime()/mSecCountInSec);
+                    postDto.setTimestamp(post.getTime().getTime() / mSecCountInSec);
                     postDto.setCommentCount(post.getPostCommentList().size());
                     postDto.setDislikeCount
                             ((int) post.getVoteList()
@@ -277,14 +234,57 @@ public class PostService {
                     if (announce.length() < announceMaxLength) {
                         postDto.setAnnounce(announce);
                     } else {
-                        postDto.setAnnounce(announce.substring(0,149) + "...");
+                        postDto.setAnnounce(announce.substring(0, 149) + "...");
                     }
                     postDtoList.add(postDto);
                 });
         return postDtoList;
     }
 
-    public List<PostDto> getListOfPostDtoByUserId (List <Post> posts, int isActive, String moderationStatus) {
+    public List<Post> getListOfPostByUserId(int offset, int limit) {
+        int currentUserId = userRepository.findByEmail(getCurrentUserEmail())
+                .orElseThrow(() -> new UsernameNotFoundException("user not found")).getId();
+        return getPostsWithLimitAndOffset(offset, limit)
+                .stream()
+                .filter(post -> post.getUserId() == currentUserId)
+                .collect(Collectors.toList());
+    }
+
+    public List<PostDto> getListOfPostDtoByUserId(List<Post> posts, int isActive) {
+        List<PostDto> postDtoList = new ArrayList<>();
+        int mSecCountInSec = 1000;
+        posts.stream()
+                .filter(post -> post.getIsActive() == isActive)
+                .forEach(post -> {
+                    PostDto postDto = PostMapper.INSTANCE.postToPostDto(post);
+                    UserForPostDto user = UserMapper.INSTANCE.userToUserForPostDto(post.getUser());
+                    postDto.setUser(user);
+                    postDto.setTimestamp(post.getTime().getTime() / mSecCountInSec);
+                    postDto.setCommentCount(post.getPostCommentList().size());
+                    postDto.setDislikeCount
+                            ((int) post.getVoteList()
+                                    .stream()
+                                    .filter(vote -> vote.getValue() < 0).count()
+                            );
+                    postDto.setLikeCount
+                            ((int) post.getVoteList()
+                                    .stream()
+                                    .filter(vote -> vote.getValue() > 0)
+                                    .count()
+                            );
+                    String announce = post.getText();
+                    int announceMaxLength = 150;
+                    if (announce.length() < announceMaxLength) {
+                        postDto.setAnnounce(announce);
+                    } else {
+                        postDto.setAnnounce(announce.substring(0, 149) + "...");
+                    }
+                    postDtoList.add(postDto);
+                });
+        return postDtoList;
+    }
+
+    public List<PostDto> getListOfPostDtoByUserId(List<Post> posts, int isActive, String moderationStatus) {
         List<PostDto> postDtoList = new ArrayList<>();
         int mSecCountInSec = 1000;
         posts.stream()
@@ -294,7 +294,7 @@ public class PostService {
                     PostDto postDto = PostMapper.INSTANCE.postToPostDto(post);
                     UserForPostDto user = UserMapper.INSTANCE.userToUserForPostDto(post.getUser());
                     postDto.setUser(user);
-                    postDto.setTimestamp(post.getTime().getTime()/mSecCountInSec);
+                    postDto.setTimestamp(post.getTime().getTime() / mSecCountInSec);
                     postDto.setCommentCount(post.getPostCommentList().size());
                     postDto.setDislikeCount
                             ((int) post.getVoteList()
@@ -312,23 +312,23 @@ public class PostService {
                     if (announce.length() < announceMaxLength) {
                         postDto.setAnnounce(announce);
                     } else {
-                        postDto.setAnnounce(announce.substring(0,149) + "...");
+                        postDto.setAnnounce(announce.substring(0, 149) + "...");
                     }
                     postDtoList.add(postDto);
                 });
         return postDtoList;
     }
 
-    public List<PostDto> getListOfPostDtoWithQuery (int offset, int limit, String query) {
-        List <Post> postsWithQuery = getPostsWithLimitAndOffset(offset, limit)
+    public List<PostDto> getListOfPostDtoWithQuery(int offset, int limit, String query) {
+        List<Post> postsWithQuery = getPostsWithLimitAndOffset(offset, limit)
                 .stream()
                 .filter(post -> post.getText().contains(query))
                 .collect(Collectors.toList());
-        return getListOfPostDto(postsWithQuery,"accepted",1,new Date());
+        return getListOfPostDto(postsWithQuery, "accepted", 1, new Date());
     }
 
-    public List<PostDto> getSortedListOfPostDtoByMode (int offset, int limit, String mode) {
-        List <Post> postList = getPostsWithLimitAndOffset(offset, limit);
+    public List<PostDto> getSortedListOfPostDtoByMode(int offset, int limit, String mode) {
+        List<Post> postList = getPostsWithLimitAndOffset(offset, limit);
         List<PostDto> postDtoList = getListOfPostDto(postList, "accepted", 1, new Date());
         if (mode.equals("early")) {
             postDtoList.sort(Comparator.comparingLong(PostDto::getTimestamp));
@@ -346,17 +346,17 @@ public class PostService {
         return postDtoList;
     }
 
-    public List<PostDto> getListOfPostDtoByDate (int offset, int limit, String date) {
-        return getListOfPostDto(getPostsWithLimitAndOffsetByDate(offset, limit, date), "accepted",1,new Date());
+    public List<PostDto> getListOfPostDtoByDate(int offset, int limit, String date) {
+        return getListOfPostDto(getPostsWithLimitAndOffsetByDate(offset, limit, date), "accepted", 1, new Date());
     }
 
     public List<PostDto> getListOfPostDtoByModerationStatus(int offset, int limit, String status) {
-        return getListOfPostDto(getPostsWithLimitAndOffset(offset, limit), status,1, new Date());
+        return getListOfPostDto(getPostsWithLimitAndOffset(offset, limit), status, 1, new Date());
     }
 
-    public List<PostDto> getListOfPostDtoByModerationStatusAndId (int offset, int limit, String status) {
+    public List<PostDto> getListOfPostDtoByModerationStatusAndId(int offset, int limit, String status) {
 
-        return getListOfPostDto(getPostsWithLimitAndOffsetByModeratorId(offset, limit, getCurrentUserEmail()), status,1,new Date());
+        return getListOfPostDto(getPostsWithLimitAndOffsetByModeratorId(offset, limit, getCurrentUserEmail()), status, 1, new Date());
     }
 
     private String getCurrentUserEmail() {
@@ -364,11 +364,11 @@ public class PostService {
         return auth.getName();
     }
 
-    public List<PostDto> getListOfPostDtoByTag (int offset, int limit, String tag) {
-        return getListOfPostDto(getPostsWithLimitAndOffsetByTag(offset, limit, tag), "accepted",1,new Date());
+    public List<PostDto> getListOfPostDtoByTag(int offset, int limit, String tag) {
+        return getListOfPostDto(getPostsWithLimitAndOffsetByTag(offset, limit, tag), "accepted", 1, new Date());
     }
 
-    public NewPostResponse addNewPost (NewPostRequest newPostRequest, Principal principal) {
+    public NewPostResponse addNewPost(NewPostRequest newPostRequest, Principal principal) {
         NewPostResponse postsResponse = new NewPostResponse();
         NewPostErrors newPostErrors = new NewPostErrors();
         if (newPostRequest.getTitle().length() < 3 || newPostRequest.getTitle() == null) {
@@ -419,7 +419,7 @@ public class PostService {
         return postsResponse;
     }
 
-    public NewPostResponse changePost (NewPostRequest newPostRequest, Principal principal, int id) {
+    public NewPostResponse changePost(NewPostRequest newPostRequest, Principal principal, int id) {
         NewPostResponse postResponse = new NewPostResponse();
         NewPostErrors newPostErrors = new NewPostErrors();
         if (newPostRequest.getTitle().length() < 3 || newPostRequest.getTitle() == null) {
@@ -444,19 +444,19 @@ public class PostService {
             postRepository.save(post);
             Tag2post tag2post = new Tag2post();
             if (newPostRequest.getTags().size() > 0) {
-            newPostRequest.getTags().forEach(t -> {
-                        Tag tag = tagRepository.getTagByName(t);
-                        if (tag == null) {
-                            Tag newTag = new Tag();
-                            newTag.setName(t);
-                            tagRepository.save(newTag);
-                            tag2post.setTagId(tagRepository.getTagByName(t).getId());
-                        } else {
-                            tag2post.setTagId(tag.getId());
-                        }
-                        tag2post.setPostId(post.getId());
-                        tag2postRepository.save(tag2post);
-                    });
+                newPostRequest.getTags().forEach(t -> {
+                    Tag tag = tagRepository.getTagByName(t);
+                    if (tag == null) {
+                        Tag newTag = new Tag();
+                        newTag.setName(t);
+                        tagRepository.save(newTag);
+                        tag2post.setTagId(tagRepository.getTagByName(t).getId());
+                    } else {
+                        tag2post.setTagId(tag.getId());
+                    }
+                    tag2post.setPostId(post.getId());
+                    tag2postRepository.save(tag2post);
+                });
             }
             postResponse.setResult(true);
             return postResponse;
@@ -466,12 +466,12 @@ public class PostService {
         return postResponse;
     }
 
-    public String isCommentAddSuccess (AddCommentRequest request) {
+    public String isCommentAddSuccess(AddCommentRequest request) {
 
         if (request.getText() == null || request.getText().length() < 5) {
             return "Текст комментария не задан или слишком короткий";
         }
-        if (request.getParentId() == null ) {
+        if (request.getParentId() == null) {
             if (!postRepository.existsById(request.getPostId())) {
                 return "400";
             }
@@ -484,7 +484,7 @@ public class PostService {
         return "200";
     }
 
-    public AddCommentResponse getAddCommentResponse (AddCommentRequest request, Principal principal) {
+    public AddCommentResponse getAddCommentResponse(AddCommentRequest request, Principal principal) {
         AddCommentResponse addCommentResponse = new AddCommentResponse();
         PostComment newComment = new PostComment();
         newComment.setText(request.getText());
@@ -497,7 +497,7 @@ public class PostService {
         return addCommentResponse;
     }
 
-    public AddCommentResponseErr getAddCommentErr (AddCommentRequest request) {
+    public AddCommentResponseErr getAddCommentErr(AddCommentRequest request) {
         AddCommentErr addCommentErr = new AddCommentErr();
         AddCommentResponseErr addCommentResponseErr = new AddCommentResponseErr();
         addCommentErr.setText(isCommentAddSuccess(request));
@@ -506,9 +506,9 @@ public class PostService {
         return addCommentResponseErr;
     }
 
-    public boolean isPostModerateSuccess (PostModerateRequest request, Principal principal) {
+    public boolean isPostModerateSuccess(PostModerateRequest request, Principal principal) {
         if (userRepository.findByEmail(principal.getName()).orElseThrow().getIsModerator() == 0
-        || !postRepository.existsById(request.getPostId())) {
+                || !postRepository.existsById(request.getPostId())) {
             return false;
         }
         Post postToModerate = postRepository.findById(request.getPostId()).orElseThrow();
@@ -528,7 +528,7 @@ public class PostService {
         return false;
     }
 
-    public StatResponse getStatResponse () {
+    public StatResponse getStatResponse() {
         StatResponse statResponse = new StatResponse();
         List<Post> posts = postRepository.findAll();
         List<Vote> votes = voteRepository.findAll();
@@ -546,22 +546,22 @@ public class PostService {
         List<Date> dateList = new ArrayList<>();
         posts.forEach(post -> dateList.add(post.getTime()));
         dateList.sort(Comparator.naturalOrder());
-        statResponse.setFirstPublication(dateList.get(0).getTime()/1000);
+        statResponse.setFirstPublication(dateList.get(0).getTime() / 1000);
         return statResponse;
     }
 
-    public boolean statisticsIsPublic () {
-        if ( globalSettingRepository.findByCode(Code.STATISTICS_IS_PUBLIC).getValue().equals(Value.NO)) {
+    public boolean statisticsIsPublic() {
+        if (globalSettingRepository.findByCode(Code.STATISTICS_IS_PUBLIC).getValue().equals(Value.NO)) {
             return false;
         }
         return true;
     }
 
-    public ResultResponse setVoteValue (PostVoteRequest request, Principal principal, int voteValue) {
+    public ResultResponse setVoteValue(PostVoteRequest request, Principal principal, int voteValue) {
         ResultResponse resultResponse = new ResultResponse();
         Post post = postRepository.getPostById(request.getPostId());
         User currentUser = userRepository.findByEmail(principal.getName()).orElseThrow();
-        Vote vote = voteRepository.getVoteByUserAndPost(currentUser,post);
+        Vote vote = voteRepository.getVoteByUserAndPost(currentUser, post);
         if (vote != null) {
             if (vote.getValue() != voteValue) {
                 vote.setValue(voteValue);
@@ -583,7 +583,7 @@ public class PostService {
         return resultResponse;
     }
 
-    public int getCountOfNewPosts () {
+    public int getCountOfNewPosts() {
         return postRepository.getPostsByModerationStatus(ModerationStatus.NEW).size();
     }
 }

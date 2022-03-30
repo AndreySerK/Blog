@@ -103,13 +103,13 @@ public class ApiGeneralController {
             return new ResponseEntity<>(loadImageResponse,HttpStatus.BAD_REQUEST);
         }
             byte[] bytes = file.getBytes();
-            String uploadDir = "src/main/resources/upload/" + randomName.substring(0,2);
+            String uploadDir = "/upload/" + randomName.substring(0,2);
             new File(uploadDir).mkdirs();
             uploadDir = uploadDir + "/" + randomName.substring(3,5);
             new File(uploadDir).mkdirs();
             uploadDir = uploadDir + "/" + randomName.substring(6,8) +"/";
             new File(uploadDir).mkdirs();
-            Path path = Paths.get(uploadDir + file.getName() + ".png");
+            Path path = Paths.get(uploadDir + file.getOriginalFilename() + ".png");
             Files.write(path, bytes);
 
             return ResponseEntity.ok(path.toString());
