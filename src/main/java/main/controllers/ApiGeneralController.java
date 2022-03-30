@@ -109,10 +109,10 @@ public class ApiGeneralController {
             new File(uploadDir).mkdirs();
             uploadDir = uploadDir + "/" + randomName.substring(6,8) +"/";
             new File(uploadDir).mkdirs();
-            Path path = Paths.get(uploadDir + file.getOriginalFilename() + ".png");
+            Path path = Paths.get(uploadDir + file.getOriginalFilename());
             Files.write(path, bytes);
 
-            return ResponseEntity.ok(path.toString().substring(17));
+            return ResponseEntity.ok(path.toString().substring(18));
     }
 
     @PostMapping("/comment")
