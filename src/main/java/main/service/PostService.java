@@ -14,7 +14,6 @@ import main.model.enums.Code;
 import main.model.enums.ModerationStatus;
 import main.model.enums.Value;
 import main.repository.*;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
@@ -323,6 +322,20 @@ public class PostService {
         return errors;
     }
 
+    private List<Tag> getTagsByName(List<String> tagNames) {
+        tagNames.forEach(t -> {
+                    if (tagRepository.findTagByName(t).isEmpty()) {
+                        Tag newTag = new Tag();
+                        newTag.setName(t);
+                        tagRepository.save(newTag);
+                    }
+                });
+        return tagNames.stream()
+                .map(t -> tagRepository.findTagByName(t)
+                        .orElseThrow(NoSuchElementException::new))
+                .collect(Collectors.toList());
+    }
+
     public NewPostResponse addNewPost(NewPostRequest newPostRequest, Principal principal) {
         NewPostResponse postsResponse = new NewPostResponse();
         Map<String, String> errors = getErrors(newPostRequest);
@@ -342,11 +355,7 @@ public class PostService {
             newPost.setText(newPostRequest.getText());
             newPost.setUser(userRepository.findByEmail(principal.getName()).orElseThrow());
             newPost.setViewCount(0);
-            List<Tag> tags = newPostRequest.getTags().stream()
-                    .map(t -> tagRepository.findTagByName(t)
-                            .orElseThrow(NoSuchElementException::new))
-                    .collect(Collectors.toList());
-            newPost.setTags(tags);
+            newPost.setTags(getTagsByName(newPostRequest.getTags()));
             postRepository.save(newPost);
             postsResponse.setResult(true);
             return postsResponse;
@@ -367,12 +376,7 @@ public class PostService {
             post.setIsActive(newPostRequest.getActive());
             post.setTitle(newPostRequest.getTitle());
             post.setText(newPostRequest.getText());
-            List<Tag> tags = newPostRequest.getTags()
-                    .stream()
-                    .map(t -> tagRepository.findTagByName(t)
-                            .orElseThrow(NoSuchElementException::new))
-                    .collect(Collectors.toList());
-            post.setTags(tags);
+            post.setTags(getTagsByName(newPostRequest.getTags()));
             if (userRepository.findByEmail(principal.getName()).get().getIsModerator() == 0) {
                 post.setModerationStatus(ModerationStatus.NEW);
             }
