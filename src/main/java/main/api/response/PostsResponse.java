@@ -9,6 +9,7 @@ import java.util.List;
 @Data
 @Component
 public class PostsResponse {
+
     private int count;
     private List<PostDto> posts;
 }

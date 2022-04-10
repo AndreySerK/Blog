@@ -48,7 +48,7 @@ public class ApiAuthController {
     private final AuthenticationManager authenticationManager;
 
     @GetMapping("/check")
-    public ResponseEntity<LoginResponse> check (Principal principal) {
+    public ResponseEntity<LoginResponse> checkAuth(Principal principal) {
         if (principal == null) {
             return ResponseEntity.ok(new LoginResponse());
         }
@@ -56,33 +56,35 @@ public class ApiAuthController {
     }
 
     @GetMapping("/captcha")
-    public CaptchaCodeDto captchaCodeDto () {
+    public CaptchaCodeDto getCaptcha() {
         return codeService.getCaptchaCodeDto();
     }
 
     @PostMapping("/register")
     @Transactional
-    public ResponseEntity<?> registerNewUser (@RequestBody RegisterRequest registerRequest)
-    {
+    public ResponseEntity<?> registerNewUser(@RequestBody RegisterRequest registerRequest) {
         if (settingsService.getGlobalSettingValueByCode(Code.MULTIUSER_MODE).equals(Value.NO)) {
-            return ResponseEntity.status(404).body(null);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
         }
-        return ResponseEntity.ok(authService.getRegisterDto(registerRequest));
+        return ResponseEntity.ok(authService.regUser(registerRequest));
     }
 
     @PostMapping("/login")
-    public ResponseEntity<LoginResponse> login (@RequestBody LoginRequest loginRequest) throws AuthenticationException {
-            Authentication auth = authenticationManager
-                    .authenticate(
-                            new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword()));
-            SecurityContextHolder.getContext().setAuthentication(auth);
+    public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest loginRequest)
+            throws AuthenticationException {
+        Authentication auth = authenticationManager
+                .authenticate(
+                        new UsernamePasswordAuthenticationToken(loginRequest.getEmail(),
+                                loginRequest.getPassword()));
+        SecurityContextHolder.getContext().setAuthentication(auth);
         User user = (User) auth.getPrincipal();
         main.model.User currentUser = userService.findUserByEmail(user.getUsername());
         return ResponseEntity.ok(userService.getLoginResponse(currentUser.getEmail()));
     }
 
     @GetMapping("/logout")
-    public ResponseEntity<AuthResponse> logout (HttpServletRequest request) throws ServletException, IOException {
+    public ResponseEntity<AuthResponse> logout(HttpServletRequest request)
+            throws ServletException, IOException {
 
         request.logout();
         if (request.getSession() != null) {
@@ -92,20 +94,16 @@ public class ApiAuthController {
     }
 
     @PostMapping("/restore")
-    public ResponseEntity<ResultResponse> restorePassword (@RequestBody RestorePasswordRequest request) {
+    public ResponseEntity<ResultResponse> restorePassword(
+            @RequestBody RestorePasswordRequest request) {
 
         return ResponseEntity.ok(authService.getPasswordRestoreResult(request));
     }
 
     @PostMapping("/password")
-    public ResponseEntity<ResultResponse> changePassword (@RequestBody ChangePasswordRequest changePasswordRequest) {
-        ResultResponse resultResponse = new ResultResponse();
-        resultResponse.setResult(false);
-        if (authService.changePasswordErrors(changePasswordRequest) == null) {
-            resultResponse.setResult(true);
-            return ResponseEntity.ok(resultResponse);
-        }
-        resultResponse.setErrors(authService.changePasswordErrors(changePasswordRequest));
-        return ResponseEntity.ok(resultResponse);
+    public ResponseEntity<ResultResponse> changePassword(
+            @RequestBody ChangePasswordRequest changePasswordRequest) {
+
+        return ResponseEntity.ok(authService.changePassword(changePasswordRequest));
     }
 }

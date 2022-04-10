@@ -9,10 +9,13 @@ import java.util.Optional;
 
 @Repository
 public interface UserRepository extends JpaRepository<User, Integer> {
-    @Query (value = "SELECT COUNT('*') " +
+
+    @Query(value = "SELECT COUNT('*') " +
             "FROM posts " +
             "WHERE moderation_status = 'NEW'", nativeQuery = true)
-    Integer getPostsForModerationCount ();
+    Integer getPostsForModerationCount();
 
-    Optional<User> findByEmail (String email);
+    Optional<User> findByEmail(String email);
+
+    Optional<User> findByCode(String code);
 }

@@ -15,7 +15,7 @@ public class SettingsService {
 
     private final GlobalSettingRepository globalSettingRepository;
 
-    public SettingsResponse getGlobalSettings () {
+    public SettingsResponse getGlobalSettings() {
         SettingsResponse settingsResponse = new SettingsResponse();
         Value multiUserModeValue = globalSettingRepository.findById(1).orElseThrow().getValue();
         Value postPremoderationValue = globalSettingRepository.findById(2).orElseThrow().getValue();
@@ -38,7 +38,7 @@ public class SettingsService {
         return settingsResponse;
     }
 
-    public void setGlobalSettings (SettingsRequest request) {
+    public void setGlobalSettings(SettingsRequest request) {
         GlobalSetting multiUserMode = globalSettingRepository.findById(1).orElseThrow();
         GlobalSetting postPremoderation = globalSettingRepository.findById(2).orElseThrow();
         GlobalSetting statisticsIsPublic = globalSettingRepository.findById(3).orElseThrow();
@@ -65,7 +65,7 @@ public class SettingsService {
         }
     }
 
-    public Value getGlobalSettingValueByCode (Code code) {
+    public Value getGlobalSettingValueByCode(Code code) {
         return globalSettingRepository.findByCode(Code.MULTIUSER_MODE).getValue();
     }
 }

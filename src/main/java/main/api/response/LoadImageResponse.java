@@ -7,6 +7,7 @@ import main.DTO.LoadImageErrDto;
 @Data
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class LoadImageResponse {
+
     private boolean result;
     private LoadImageErrDto errors;
 }

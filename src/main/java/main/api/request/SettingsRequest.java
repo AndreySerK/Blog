@@ -5,7 +5,8 @@ import lombok.Data;
 
 @Data
 public class SettingsRequest {
-    @JsonProperty ("MULTIUSER_MODE")
+
+    @JsonProperty("MULTIUSER_MODE")
     private boolean multiuserMode;
     @JsonProperty("POST_PREMODERATION")
     private boolean postPremoderation;

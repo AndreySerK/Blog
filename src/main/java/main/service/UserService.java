@@ -14,6 +14,7 @@ import main.model.User;
 import main.model.Vote;
 import main.repository.UserRepository;
 import main.repository.VoteRepository;
+import org.apache.commons.io.FilenameUtils;
 import org.imgscalr.Scalr;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -23,11 +24,14 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.Principal;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import static main.service.PostService.setStatResponse;
 
 @Service
 @RequiredArgsConstructor
@@ -38,15 +42,15 @@ public class UserService {
     private final SecurityConfig securityConfig;
     private final PostService postService;
 
-    public List<User> getUsers () {
+    public List<User> getUsers() {
         return (List<User>) userRepository.findAll();
     }
 
-    public User findUserByEmail (String email) {
+    public User findUserByEmail(String email) {
         return userRepository.findByEmail(email).orElseThrow();
     }
 
-    public LoginResponse getLoginResponse (String email) {
+    public LoginResponse getLoginResponse(String email) {
         LoginResponse loginResponse = new LoginResponse();
         User currentUser = userRepository.findByEmail(
                 email).orElseThrow();
@@ -62,7 +66,8 @@ public class UserService {
         return loginResponse;
     }
 
-    public ResultResponse resultResponse (ChangeProfileRequest request, Principal principal) throws IOException {
+    public ResultResponse resultResponse(ChangeProfileRequest request, Principal principal)
+            throws IOException {
         User user = userRepository.findByEmail(principal.getName()).orElseThrow();
         PasswordEncoder passwordEncoder = securityConfig.passwordEncoder();
         ResultResponse resultResponse = new ResultResponse();
@@ -71,7 +76,7 @@ public class UserService {
 
         if (request.getEmail() != null) {
             if (userRepository.findByEmail(request.getEmail()).isPresent()
-            && !request.getEmail().equals(principal.getName())) {
+                    && !request.getEmail().equals(principal.getName())) {
                 errorsDto.setEmail("Этот e-mail уже зарегистрирован");
                 resultResponse.setResult(false);
             } else {
@@ -80,10 +85,10 @@ public class UserService {
         }
         if (request.getName() != null) {
             if (request.getName().length() < 3
-            && !request.getName().matches("[A-Za-z0-9 _]+")) {
+                    && !request.getName().matches("[A-Za-z0-9 _]+")) {
                 errorsDto.setName("Имя указано неверно");
                 resultResponse.setResult(false);
-            }else {
+            } else {
                 user.setName(request.getName());
             }
         }
@@ -96,18 +101,26 @@ public class UserService {
             }
         }
         if (request.getPhoto() != null) {
-            if (request.getPhoto().getSize() > 5242880) {
+            if (request.getPhoto().getSize() > 5 * 1024 * 1024) {
                 errorsDto.setPhoto("Фото слишком большое, нужно не более 5 Мб");
                 resultResponse.setResult(false);
             } else {
-                Path photoPath = Paths.get("src/main/resources/user_photo/" + request.getPhoto().getOriginalFilename());
-                request.getPhoto().transferTo(photoPath);
-                File file = new File(String.valueOf(photoPath));
-                BufferedImage image = ImageIO.read(file);
-                BufferedImage resizedImage = Scalr.resize(image, 36,36);
-                ImageIO.write(resizedImage, "png", file);
-                resizedImage.flush();
-                user.setPhoto(file.getAbsolutePath());
+                try {
+                    BufferedImage bufferedImage = ImageIO.read(request.getPhoto().getInputStream());
+                    BufferedImage resultImage = Scalr.resize(bufferedImage, 36, 36);
+                    String toFile = "upload/" + user.getId() + "/" + request.getPhoto().getOriginalFilename();
+                    Path path = Paths.get(toFile);
+                    if (!path.toFile().exists()) {
+                        Files.createDirectories(path.getParent());
+                        Files.createFile(path);
+                        String extension = FilenameUtils.getExtension(request.getPhoto().getOriginalFilename());
+                        assert extension != null;
+                        ImageIO.write(resultImage, extension, path.toFile());
+                    }
+                    user.setPhoto("/" + toFile.substring(toFile.lastIndexOf("upload")));
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
         }
         if (request.getRemovePhoto() != null && request.getRemovePhoto() == 1) {
@@ -121,7 +134,7 @@ public class UserService {
         return resultResponse;
     }
 
-    public StatResponse getStatResponse (Principal principal) {
+    public StatResponse getStatResponse(Principal principal) {
         StatResponse myStatResponse = new StatResponse();
         User currentUser = userRepository.findByEmail(principal.getName()).orElseThrow();
         List<Post> posts = currentUser.getPosts();
@@ -137,10 +150,6 @@ public class UserService {
         myStatResponse.setLikesCount(likesCount);
         myStatResponse.setPostsCount(posts.size());
         myStatResponse.setViewsCount(viewCount);
-        List<Date> dateList = new ArrayList<>();
-        posts.forEach(post -> dateList.add(post.getTime()));
-        dateList.sort(Comparator.naturalOrder());
-        myStatResponse.setFirstPublication(dateList.get(0).getTime()/1000);
-        return myStatResponse;
+        return setStatResponse(myStatResponse, posts);
     }
 }

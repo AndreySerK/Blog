@@ -13,11 +13,11 @@ public interface UserMapper {
 
     UserMapper INSTANCE = Mappers.getMapper(UserMapper.class);
 
-    AuthUserDto userToAuthUserDto (User user);
+    AuthUserDto userToAuthUserDto(User user);
 
-    UserLoginResponse userToUserResponse (User user);
+    UserLoginResponse userToUserResponse(User user);
 
-    UserForCommentDto userToUserForCommentsDto (User user);
+    UserForCommentDto userToUserForCommentsDto(User user);
 
-    UserForPostDto userToUserForPostDto (User user);
+    UserForPostDto userToUserForPostDto(User user);
 }

@@ -1,4 +1,5 @@
 package main.service;
+
 import lombok.RequiredArgsConstructor;
 import main.DTO.TagDto;
 import main.mappers.TagMapper;
@@ -16,22 +17,22 @@ public class TagService {
     private final TagRepository tagRepository;
     private final PostRepository postRepository;
 
-    private List <Tag> getAllTags () {
+    private List<Tag> getAllTags() {
         return (List<Tag>) tagRepository.findAll();
     }
 
-    private Double getWeightOfTag (Tag tag) {
-        double tag2postCount  = tag.getPosts().size();
+    private Double getWeightOfTag(Tag tag) {
+        double tag2postCount = tag.getPosts().size();
         long allPostCount = postRepository.count();
-        double dWeightTag = tag2postCount/allPostCount;
+        double dWeightTag = tag2postCount / allPostCount;
         double countOfMostPopularTag = tagRepository.getCountOfMostPopularTag();
-        double dWeightMax = countOfMostPopularTag/allPostCount;
-        double k = 1/dWeightMax;
-        return dWeightTag*k;
+        double dWeightMax = countOfMostPopularTag / allPostCount;
+        double k = 1 / dWeightMax;
+        return dWeightTag * k;
     }
 
-    public List<TagDto> getAllTagDtoByQuery (String query) {
-        List <TagDto> tagDtoList = new ArrayList<>();
+    public List<TagDto> getAllTagDtoByQuery(String query) {
+        List<TagDto> tagDtoList = new ArrayList<>();
         List<Tag> tagList = getAllTags();
         tagList.forEach
                 (tag -> {
@@ -44,8 +45,8 @@ public class TagService {
         return tagDtoList;
     }
 
-    public List<TagDto> getAllTagDto () {
-        List <TagDto> tagDtoList = new ArrayList<>();
+    public List<TagDto> getAllTagDto() {
+        List<TagDto> tagDtoList = new ArrayList<>();
         List<Tag> tagList = getAllTags();
         tagList.forEach
                 (tag -> {

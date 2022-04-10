@@ -5,6 +5,7 @@ import main.DTO.AddCommentErr;
 
 @Data
 public class AddCommentResponseErr {
+
     private boolean result;
     private AddCommentErr errors;
 }

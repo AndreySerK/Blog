@@ -24,21 +24,21 @@ public class Post {
     @NotNull
     private Integer id;
 
-    @ManyToOne (fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     @ToString.Exclude
     private User user;
 
-    @OneToMany (mappedBy = "post",cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL)
     @ToString.Exclude
     private List<Vote> voteList;
 
-    @OneToMany (mappedBy = "post",cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL)
     @ToString.Exclude
     private List<PostComment> postCommentList;
 
     @NotNull
-    @Column (name = "is_active",columnDefinition = "TINYINT")
+    @Column(name = "is_active", columnDefinition = "TINYINT")
     private int isActive;
 
     @Column(name = "moderation_status")
@@ -57,11 +57,11 @@ public class Post {
     @NotNull
     private Date time;
 
-    @Column(columnDefinition="VARCHAR(255)")
+    @Column(columnDefinition = "VARCHAR(255)")
     @NotNull
     private String title;
 
-    @Column (columnDefinition = "TEXT")
+    @Column(columnDefinition = "TEXT")
     @NotNull
     private String text;
 
@@ -74,12 +74,16 @@ public class Post {
             joinColumns = @JoinColumn(name = "post_id"),
             inverseJoinColumns = @JoinColumn(name = "tag_id"))
     @ToString.Exclude
-    public List <Tag> tags;
+    public List<Tag> tags;
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || Hibernate.getClass(this) != Hibernate.getClass(o)) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || Hibernate.getClass(this) != Hibernate.getClass(o)) {
+            return false;
+        }
         Post post = (Post) o;
         return id != null && Objects.equals(id, post.id);
     }

@@ -8,6 +8,7 @@ import javax.persistence.*;
 @Entity
 @Data
 public class Tag2post {
+
     @Id
     @NotNull
     @GeneratedValue(strategy = GenerationType.IDENTITY)

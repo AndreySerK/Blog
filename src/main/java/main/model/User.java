@@ -2,13 +2,14 @@ package main.model;
 
 import com.sun.istack.NotNull;
 import lombok.*;
+
 import javax.persistence.*;
 import java.util.Date;
 import java.util.List;
 
 @Data
 @Entity
-@Table (name = "users")
+@Table(name = "users")
 public class User {
 
     @Id
@@ -16,7 +17,7 @@ public class User {
     @NotNull
     private int id;
 
-    @OneToMany (cascade = CascadeType.ALL, mappedBy = "user")
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "user")
     @ToString.Exclude
     private List<Post> posts;
 
@@ -28,30 +29,30 @@ public class User {
     @ToString.Exclude
     private PostComment postComment;
 
-    @Column (name = "is_moderator",columnDefinition = "TINYINT")
+    @Column(name = "is_moderator", columnDefinition = "TINYINT")
     @NotNull
     private int isModerator;
 
-    @Column (name = "reg_time",columnDefinition = "DATETIME")
+    @Column(name = "reg_time", columnDefinition = "DATETIME")
     @NotNull
     private Date regTime;
 
     @NotNull
-    @Column(columnDefinition="VARCHAR(255)")
+    @Column(columnDefinition = "VARCHAR(255)")
     private String name;
 
     @NotNull
-    @Column(columnDefinition="VARCHAR(255)")
+    @Column(columnDefinition = "VARCHAR(255)")
     private String email;
 
     @NotNull
-    @Column(columnDefinition="VARCHAR(255)")
+    @Column(columnDefinition = "VARCHAR(255)")
     private String password;
 
-    @Column(columnDefinition="VARCHAR(255)")
+    @Column(columnDefinition = "VARCHAR(255)")
     private String code;
 
-    @Column (columnDefinition = "TEXT")
+    @Column(columnDefinition = "TEXT")
     private String photo;
 
     public Role getRole() {

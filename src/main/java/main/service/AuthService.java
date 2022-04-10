@@ -18,12 +18,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
-import java.util.Date;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -34,20 +33,22 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class AuthService {
 
+    public static final int MIN_PASSWORD_LENGTH = 6;
+
     private final UserRepository userRepository;
     private final CaptchaCodeRepository captchaCodeRepository;
     private final PasswordEncoder passwordEncoder;
     private final EmailService emailService;
 
-    public int getPostsForModerationCount () {
+    public int getPostsForModerationCount() {
         return userRepository.getPostsForModerationCount();
     }
 
-    public User getAuthUser (int id) {
+    public User getAuthUser(int id) {
         return userRepository.findById(id).orElseThrow();
     }
 
-    private boolean isEmailAlreadyInUse (String email) {
+    private boolean isEmailAlreadyInUse(String email) {
         return userRepository.findAll().stream()
                 .anyMatch(user -> user.getEmail().equals(email));
     }
@@ -59,23 +60,25 @@ public class AuthService {
         return m.matches();
     }
 
-    private boolean isValidPassword (String password) {
+    private boolean isValidPassword(String password) {
         int minPasswordLength = 6;
         return password.length() >= minPasswordLength;
     }
 
-    private boolean isValidCaptcha (String code, String secretCode) {
-        if(captchaCodeRepository.findCaptchaCodeBySecretCode(secretCode).isEmpty()) {
+    private boolean isValidCaptcha(String code, String secretCode) {
+        if (captchaCodeRepository.findCaptchaCodeBySecretCode(secretCode).isEmpty()) {
             return false;
-        } else
-            return captchaCodeRepository.findCaptchaCodeBySecretCode(secretCode).get(0).getCode().equals(code);
+        } else {
+            return captchaCodeRepository.findCaptchaCodeBySecretCode(secretCode).get(0).getCode()
+                    .equals(code);
+        }
     }
 
-    public RegisterDto getRegisterDto (RegisterRequest registerRequest) {
+    public RegisterDto regUser(RegisterRequest registerRequest) {
         if (isValidName(registerRequest.getName())
                 && !isEmailAlreadyInUse(registerRequest.getEmail())
                 && isValidPassword(registerRequest.getPassword())
-                && isValidCaptcha(registerRequest.getCaptcha(),registerRequest.getCaptchaSecret()))   {
+                && isValidCaptcha(registerRequest.getCaptcha(), registerRequest.getCaptchaSecret())) {
             User newUser = new User();
             newUser.setEmail(registerRequest.getEmail());
             newUser.setName(registerRequest.getName());
@@ -103,37 +106,56 @@ public class AuthService {
         return registerDtoErr;
     }
 
-    public ErrorsDto changePasswordErrors (ChangePasswordRequest request) {
+    private ErrorsDto changePasswordErrors(ChangePasswordRequest request) {
         ErrorsDto errorsDto = new ErrorsDto();
-        CaptchaCode captchaCode = captchaCodeRepository.getCaptchaCodeBySecretCode(request.getCaptchaSecret());
-        if (captchaCode == null) {
-            errorsDto.setCode("Ссылка для восстановления пароля устарела");
-        } else {
-            if (!request.getCaptcha().equals(captchaCode.getCode())) {
-                errorsDto.setCode("Код с картинки введён неверно");
-            }
-            if (request.getPassword().length() < 6) {
-                errorsDto.setPassword("Пароль короче 6-ти символов");
-            }
+        String code = request.getCode();
+        String password = request.getPassword();
+        String captcha = request.getCaptcha();
+        String secret = request.getCaptchaSecret();
+        if (password.length() < MIN_PASSWORD_LENGTH) {
+            errorsDto.setPassword("Пароль короче 6-ти символов");
+        }
+        if (userRepository.findByCode(code).isEmpty()) {
+            errorsDto.setCode("Ссылка для восстановления пароля устарела" +
+                    "<a href=\"/auth/restore\">Запросить ссылку снова</a>");
+        }
+        String getCaptcha = captchaCodeRepository
+                .getCaptchaCodeBySecretCode(secret).getCode();
+
+        if (getCaptcha.equals(captcha)) {
+            errorsDto.setCaptcha("Код с картинки введён неверно");
         }
         return errorsDto;
     }
 
-    public ResultResponse getPasswordRestoreResult (RestorePasswordRequest request) {
+    public ResultResponse changePassword(ChangePasswordRequest request) {
+        ResultResponse resultResponse = new ResultResponse();
+        resultResponse.setResult(false);
+        if (changePasswordErrors(request).equals(new ErrorsDto())) {
+            resultResponse.setResult(true);
+            User user = userRepository.findByCode(request.getCode())
+                    .orElseThrow(() -> new NoSuchElementException("User not found"));
+            user.setPassword(passwordEncoder.encode(request.getPassword()));
+            user.setCode(null);
+            userRepository.save(user);
+            return resultResponse;
+        }
+        resultResponse.setErrors(changePasswordErrors(request));
+        return resultResponse;
+    }
+
+    public ResultResponse getPasswordRestoreResult(RestorePasswordRequest request) {
         ResultResponse resultResponse = new ResultResponse();
         if (userRepository.findByEmail(request.getEmail()).isPresent()) {
-            char[] text = new char[18];
-            String characters = "1234567890abcdefghijklmnoprst";
-            Random rnd = new Random();
-            for (int i = 0; i < 18; i++) {
-                text[i] = characters.charAt(rnd.nextInt(characters.length()));
-            }
-            String hash = new String(text);
-            String message = "https://kuznetsov-java-blog.herokuapp.com/login/change-password/" + hash;
+            String hash = UUID.randomUUID().toString().replaceAll("-", "");
+            String baseUrl = ServletUriComponentsBuilder
+                    .fromCurrentContextPath().build().toUriString();
+            String message = baseUrl + "/login/change-password/" + hash;
+            ;
             User user = userRepository.findByEmail(request.getEmail()).get();
             user.setCode(hash);
             userRepository.save(user);
-            emailService.sendRestorePasswordLink(request.getEmail(),message);
+            emailService.sendRestorePasswordLink(request.getEmail(), message);
             resultResponse.setResult(true);
             return resultResponse;
         }

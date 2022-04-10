@@ -8,7 +8,8 @@ import java.util.List;
 
 @Data
 public class NewPostRequest {
-    private Timestamp timestamp;
+
+    private long timestamp;
     private int active;
     private String title;
     private List<String> tags;

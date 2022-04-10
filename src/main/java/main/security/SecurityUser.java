@@ -11,6 +11,7 @@ import java.util.List;
 
 @Data
 public class SecurityUser implements UserDetails {
+
     private final String username;
     private final String password;
     private final List<SimpleGrantedAuthority> authorities;
@@ -50,11 +51,11 @@ public class SecurityUser implements UserDetails {
         return true;
     }
 
-    public static UserDetails fromUser (User user) {
+    public static UserDetails fromUser(User user) {
         return new org.springframework.security.core.userdetails.User(
                 user.getEmail(),
                 user.getPassword(),
-                true,true,true,true,
+                true, true, true, true,
                 user.getRole().getAuthorities());
     }
 }

@@ -4,6 +4,7 @@ import com.sun.istack.NotNull;
 import lombok.*;
 import main.model.enums.Code;
 import main.model.enums.Value;
+
 import javax.persistence.*;
 
 @Entity
@@ -16,16 +17,16 @@ public class GlobalSetting {
     @NotNull
     private int id;
 
-    @Column (columnDefinition = "VARCHAR(255)")
+    @Column(columnDefinition = "VARCHAR(255)")
     @NotNull
     @Enumerated(EnumType.STRING)
     private Code code;
 
-    @Column (columnDefinition = "VARCHAR(255)")
+    @Column(columnDefinition = "VARCHAR(255)")
     @NotNull
     private String name;
 
-    @Column (columnDefinition = "VARCHAR(255)")
+    @Column(columnDefinition = "VARCHAR(255)")
     @NotNull
     @Enumerated(EnumType.STRING)
     private Value value;

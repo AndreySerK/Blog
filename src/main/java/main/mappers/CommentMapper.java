@@ -9,7 +9,10 @@ import org.mapstruct.factory.Mappers;
 
 @Mapper
 public interface CommentMapper {
+
     CommentMapper INSTANCE = Mappers.getMapper(CommentMapper.class);
-    CommentForPostByIdDto commentForPostByIdDto (PostComment comment);
-    PostComment requestToPostComment (AddCommentRequest addCommentRequest);
+
+    CommentForPostByIdDto commentForPostByIdDto(PostComment comment);
+
+    PostComment requestToPostComment(AddCommentRequest addCommentRequest);
 }

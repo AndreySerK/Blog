@@ -10,6 +10,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.text.RandomStringGenerator;
 import org.imgscalr.Scalr;
 import org.springframework.stereotype.Service;
+
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -23,13 +24,14 @@ public class CaptchaCodeService {
 
     private final CaptchaCodeRepository codeRepository;
 
-    public CaptchaCodeDto getCaptchaCodeDto () {
+    public CaptchaCodeDto getCaptchaCodeDto() {
         Cage cage = new GCage();
         CaptchaCode captchaCode = new CaptchaCode();
         CaptchaCodeDto captchaCodeDto = new CaptchaCodeDto();
         String code = cage.getTokenGenerator().next();
         try {
-            String secretCode = new RandomStringGenerator.Builder().withinRange(30,122).build().generate(12);
+            String secretCode = new RandomStringGenerator.Builder().withinRange(30, 122).build()
+                    .generate(12);
             captchaCode.setCode(code);
             captchaCode.setSecretCode(secretCode);
             captchaCode.setTime(new Date());
@@ -40,7 +42,7 @@ public class CaptchaCodeService {
             ImageIO.write(image, "png", imageFile);
             byte[] fileContent = FileUtils.readFileToByteArray(imageFile);
             String encodedString = Base64.getEncoder().encodeToString(fileContent);
-            captchaCodeDto.setImage( "data:image/png;base64, " + encodedString);
+            captchaCodeDto.setImage("data:image/png;base64, " + encodedString);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -48,7 +50,7 @@ public class CaptchaCodeService {
         return captchaCodeDto;
     }
 
-    private void removeOutdatedCaptchaCode (int timePeriodInMs) {
+    private void removeOutdatedCaptchaCode(int timePeriodInMs) {
         Date date = new Date(System.currentTimeMillis() - timePeriodInMs);
         codeRepository.findAll()
                 .forEach(captchaCode -> {

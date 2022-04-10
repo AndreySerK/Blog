@@ -5,6 +5,7 @@ import lombok.Data;
 
 @Data
 public class PostVoteRequest {
+
     @JsonProperty("post_id")
     private int postId;
 }

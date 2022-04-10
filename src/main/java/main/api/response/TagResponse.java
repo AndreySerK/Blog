@@ -11,5 +11,6 @@ import java.util.List;
 @Setter
 @Component
 public class TagResponse {
+
     private List<TagDto> tags;
 }

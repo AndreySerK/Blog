@@ -10,7 +10,9 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface VoteRepository extends JpaRepository<Vote,Integer> {
-    List<Vote> getVotesByUser (User user);
-    Vote getVoteByUserAndPost (User user, Post post);
+public interface VoteRepository extends JpaRepository<Vote, Integer> {
+
+    List<Vote> getVotesByUser(User user);
+
+    Vote getVoteByUserAndPost(User user, Post post);
 }

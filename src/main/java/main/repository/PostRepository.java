@@ -11,10 +11,13 @@ import java.util.List;
 
 @Repository
 public interface PostRepository extends JpaRepository<Post, Integer> {
+
     @Query(value = "SELECT COUNT(*) FROM posts", nativeQuery = true)
     Integer getCountOfAllPosts();
 
     List<Post> getPostsByUserId(int userId);
-    Post getPostById (int id);
-    List<Post> getPostsByModerationStatus (ModerationStatus moderationStatus);
+
+    Post getPostById(int id);
+
+    List<Post> getPostsByModerationStatus(ModerationStatus moderationStatus);
 }

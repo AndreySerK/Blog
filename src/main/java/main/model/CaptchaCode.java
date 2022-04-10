@@ -1,6 +1,7 @@
 package main.model;
 
 import lombok.*;
+
 import javax.persistence.*;
 import java.util.Date;
 
@@ -16,10 +17,10 @@ public class CaptchaCode {
     @Column(columnDefinition = "DATETIME", nullable = false)
     private Date time;
 
-    @Column (columnDefinition = "TINYTEXT", nullable = false)
+    @Column(columnDefinition = "TINYTEXT", nullable = false)
     private String code;
 
-    @Column (name = "secret_code", columnDefinition = "TINYTEXT", nullable = false)
+    @Column(name = "secret_code", columnDefinition = "TINYTEXT", nullable = false)
     private String secretCode;
 
 }

@@ -6,5 +6,6 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface PostCommentRepository extends CrudRepository<PostComment, Integer> {
-    PostComment getPostCommentByText (String text);
+
+    PostComment getPostCommentByText(String text);
 }

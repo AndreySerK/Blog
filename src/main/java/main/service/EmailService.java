@@ -17,7 +17,7 @@ public class EmailService {
         SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(to);
         message.setSubject("Password restore");
-        message.setText(text);
+        message.setText("Ссылка для смены пароля\n" + text);
         emailSender.send(message);
     }
 }

@@ -8,6 +8,7 @@ import java.util.List;
 @Data
 @Component
 public class PostByIdDto {
+
     private int id;
     private long timestamp;
     private Boolean active;
@@ -18,5 +19,5 @@ public class PostByIdDto {
     private int dislikeCount;
     private int viewCount;
     private List<CommentForPostByIdDto> comments;
-    private List<TagForPostByIdDto> tags;
+    private List<String> tags;
 }

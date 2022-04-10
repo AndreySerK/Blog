@@ -6,5 +6,6 @@ import org.springframework.stereotype.Repository;
 
 
 @Repository
-public interface Tag2postRepository extends JpaRepository <Tag2post, Integer> {
+public interface Tag2postRepository extends JpaRepository<Tag2post, Integer> {
+
 }

@@ -9,6 +9,7 @@ import java.util.Map;
 @Data
 @Component
 public class CalendarOfPostsResponse {
-    private List <Integer> years;
+
+    private List<Integer> years;
     private Map<String, Integer> posts;
 }

@@ -2,11 +2,17 @@ package main.DTO;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Setter;
 import org.springframework.web.multipart.MultipartFile;
 
-@Data
+@EqualsAndHashCode
+@Getter
+@Setter
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ErrorsDto {
+
     private String email;
     private String name;
     private String password;

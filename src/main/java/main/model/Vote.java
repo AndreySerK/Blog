@@ -2,6 +2,7 @@ package main.model;
 
 import com.sun.istack.NotNull;
 import lombok.*;
+
 import javax.persistence.*;
 import java.util.Date;
 
@@ -24,11 +25,11 @@ public class Vote {
     @ToString.Exclude
     private User user;
 
-    @Column(name = "user_id", insertable = false, updatable =false)
+    @Column(name = "user_id", insertable = false, updatable = false)
     @NotNull
     private int userId;
 
-    @Column(name = "post_id", insertable = false, updatable =false)
+    @Column(name = "post_id", insertable = false, updatable = false)
     @NotNull
     private int postId;
 

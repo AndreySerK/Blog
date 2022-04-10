@@ -5,6 +5,7 @@ import lombok.Data;
 
 @Data
 public class PostModerateRequest {
+
     @JsonProperty("post_id")
     private Integer postId;
     private String decision;
