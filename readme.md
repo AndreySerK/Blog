@@ -21,7 +21,6 @@ Created with:
 * Maven
 * Spring (Boot, Web, Security, DATA JPA)
 * MySQL
-* Heroku
 * Lombok
 * Thymeleaf
 * Mapstruct
