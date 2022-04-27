@@ -19,9 +19,8 @@ This is Blog project with the following features:
 Created with:
 
 * Maven
-* Spring (Boot, Web, Security)
+* Spring (Boot, Web, Security, DATA JPA)
 * MySQL
-* Hibernate
 * Heroku
 * Lombok
 * Thymeleaf
